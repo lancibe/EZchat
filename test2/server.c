@@ -1,4 +1,7 @@
 // 基于C/S模型的服务端
+
+#include "/home/lancibe/下载/mysql-5.7.26-linux-glibc2.12-x86_64/include/mysql.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -9,8 +12,6 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <errno.h>
-
-#include "/usr/local/mysql/include/mysql.h"
 
 
 
