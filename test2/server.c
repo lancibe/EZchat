@@ -40,40 +40,32 @@ void BindMysql(void)
     {
 		my_err("mysql_init", __LINE__);
 	}
-	printf("初始化句柄成功");
+	printf("初始化句柄成功\n");
 
 	//初始化数据库
 	if(mysql_library_init(0, NULL, NULL) != 0)
     {
 		my_err("mysql_library_init", __LINE__);
 	}
-	printf("初始化数据库成功");
+	printf("初始化数据库成功\n");
 
 	//连接数据库
-	if(NULL == mysql_real_connect(&mysql, "localhost", "root", "Zhangyixun1", "users_test", 0, NULL, 0))
+	if(NULL == mysql_real_connect(&mysql, "127.0.0.1", "root", "Zhangyixun1", "users_test", 0, NULL, 0))
     {
-		my_err("mysql_real_connect", __LINE__);
+		mysql_error(&mysql);
 	}
-	printf("连接数据库成功");
+	printf("连接数据库成功\n");
 
 	//设置中文字符集
 	if(mysql_set_character_set(&mysql, "utf8") < 0)
     {
 		my_err("mysql_set_character_set", __LINE__);
 	}
-	printf("中文字符集设置成功");
+	printf("中文字符集设置成功\n");
 
-	printf("连接数据库成功");
-	unsigned int num_fields = mysql_num_fields(result);
+	printf("连接数据库成功\n");
+	mysql_query(&mysql, "insert into userinfo values(default, 'test3', '00000002', '123456'");
 
-	while (row = mysql_fetch_row(result)) 
-	{
-		for (int i = 0; i < num_fields; i++) 
-		{
-			printf("%-20s", row[i]);
-		}
-		printf("\n");
-	}
 }    
 
 
