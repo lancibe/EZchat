@@ -1,5 +1,6 @@
 // 基于C/S模型的服务端
 // gcc server.c -o server -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
+// i686-w64-mingw32-gcc client.c -o client.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl -mwindows
 
 #include <mysql/mysql.h>
 #include <sys/types.h>
