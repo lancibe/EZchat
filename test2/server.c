@@ -50,7 +50,7 @@ void BindMysql(void)
 	printf("初始化数据库成功\n");
 
 	//连接数据库
-	if(NULL == mysql_real_connect(&mysql, "127.0.0.1", "root", "Zhangyixun1", "users_test", 0, NULL, 0))
+	if(NULL == mysql_real_connect(&mysql, "localhost", "root", "Zhangyixun1", "users_test", 0, NULL, 0))
     {
 		mysql_error(&mysql);
 	}
@@ -64,8 +64,33 @@ void BindMysql(void)
 	printf("中文字符集设置成功\n");
 
 	printf("连接数据库成功\n");
-	mysql_query(&mysql, "insert into userinfo values(default, 'test3', '00000002', '123456'");
 
+	int ret;
+	unsigned int num_fields;
+
+
+	ret= mysql_query(&mysql, "select * from users_test.userinfo");
+
+	if(!ret)
+	{
+		result = mysql_store_result(&mysql);
+		if(result)
+		{
+			num_fields = mysql_num_fields(result);
+			while((field = mysql_fetch_field(result)))
+			{
+				printf("%-20s", field->name);
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		printf("error\n");
+	}
+	
+
+	mysql_close(&mysql);
 }    
 
 
