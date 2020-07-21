@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 	//创建客户端链接
 	struct sockaddr_in ClientMsg;
 	int len = sizeof(ClientMsg);
-	int SocketClient = accept(server,(struct sockaddr*)&ClientMsg, &len);
+	int SocketClient = accept(server,(struct sockaddr*)&ClientMsg, &len);//这里创建的套接字就是对应某个客户端的套接字
 	
 	//欢迎客户端
 	printf("%s已经连接成功\n", inet_ntoa(ClientMsg.sin_addr));
@@ -58,41 +58,38 @@ int main(int argc, char** argv)
 }
 
 
+
 //自定义错误处理函数
 void my_err(const char* err_string, int line)
 {
 	fprintf(stderr, "line:%d  ", line);
 	perror(err_string);
-
 	exit(1);
 }
+
+
 
 // 连接数据库
 MYSQL Connect_Database(void)
 {
     MYSQL mysql;
     //初始化一个句柄
-    if(NULL == mysql_init(&mysql))
-    {
+    if(NULL == mysql_init(&mysql)) {
 		my_err("mysql_init", __LINE__);
 	}
 
 	//初始化数据库
-	if(mysql_library_init(0, NULL, NULL) != 0)
-    {
+	if(mysql_library_init(0, NULL, NULL) != 0) {
 		my_err("mysql_library_init", __LINE__);
 	}
 
 	//连接数据库
-	if(NULL == mysql_real_connect(&mysql, "localhost", "root", "Zhangyixun1", "users_test", 0, NULL, 0))
-    {
+	if(NULL == mysql_real_connect(&mysql, "localhost", "root", "Zhangyixun1", "users_test", 0, NULL, 0)) {
 		my_err("mysql_real_connect",__LINE__);
 	}
 
-
 	//设置中文字符集
-	if(mysql_set_character_set(&mysql, "utf8") < 0)
-    {
+	if(mysql_set_character_set(&mysql, "utf8") < 0) {
 		my_err("mysql_set_character_set", __LINE__);
 	}
 	return mysql;
