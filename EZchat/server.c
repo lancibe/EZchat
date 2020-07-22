@@ -1,10 +1,13 @@
 // 基于C/S模型的服务端
 // gcc server.c -o server -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
-// i686-w64-mingw32-gcc client.c -o client.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl -mwindows
+// i686-w64-mingw32-gcc server.c -o server.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
 #include <mysql/mysql.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/epoll.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +27,7 @@ int main(int argc, char** argv)
 {
 	char SendMsg[1500] = {0} ; 
 	char RecvMsg[1500] = {0};
+	MYSQL mysql = Connect_Database();
 
 	//创建一个TCP套接字
 	int server = socket(AF_INET, SOCK_STREAM, 0);				
@@ -43,7 +47,7 @@ int main(int argc, char** argv)
 	if(listen(server, 10) < 0)																
 		my_err("listen", __LINE__);
 
-	//创建客户端链接
+/* 	//创建客户端链接
 	struct sockaddr_in ClientMsg;
 	int len = sizeof(ClientMsg);
 	int SocketClient = accept(server,(struct sockaddr*)&ClientMsg, &len);//这里创建的套接字就是对应某个客户端的套接字
@@ -51,9 +55,96 @@ int main(int argc, char** argv)
 	//欢迎客户端
 	printf("%s已经连接成功\n", inet_ntoa(ClientMsg.sin_addr));
 	if(send(SocketClient, "你已连接至服务器", strlen("你已连接至服务器"), 0) < 0)
-		my_err("send", __LINE__);
+		my_err("send", __LINE__); */
+
+
+	//使用epoll实现I/O
+	int Sockets, SocketNum;
+	struct epoll_event ListenEvent,Events[64];
+	Sockets = epoll_create(64);
+	
+	ListenEvent.events = EPOLLIN;
+	ListenEvent.data.fd = server;
+
+	epoll_ctl(Sockets, EPOLL_CTL_ADD, server, &ListenEvent);
+	while(1)
+	{
+		int num,i;
+		num = epoll_wait(Sockets, Events, 64, 3000);
+		for(i = 0 ; i < num ; i++)
+		{
+			int tempSocket = Events[i].data.fd;
+
+			if(Events[i].events & EPOLLIN)
+			{
+				if(tempSocket == server)//说明有新连接
+				{
+					//创建对应新连接用户的套接字
+					struct sockaddr_in ClientMsg;
+					int len = sizeof(ClientMsg);
+					int SocketClient = accept(server, (struct sockaddr*)&ClientMsg, &len);
+				
+					//给即将上树的结构体初始化
+					struct epoll_event tempEvent;
+					tempEvent.events = EPOLLIN;
+					tempEvent.data.fd = SocketClient;
+
+					//上树
+					epoll_ctl(Sockets, EPOLL_CTL_ADD, SocketClient, &tempEvent);
+				}
+				else	//这里是有数据到来
+				{
+					int n_data = read(tempSocket, RecvMsg, sizeof(RecvMsg));
+					if(n_data == 0)
+					{
+						epoll_ctl(Sockets, EPOLL_CTL_DEL, tempSocket, NULL);//下树
+						close(tempSocket);
+					}
+					else if (n_data < 0)
+					{
+						my_err("read", __LINE__);
+					}
+
+					do{
+						//此处处理读出的数据
+					}while((n_data = read(tempSocket, RecvMsg, sizeof(RecvMsg))) > 0);
+				}	
+			}
+			else if (Events[i].events & EPOLLOUT)
+			{
+				//处理写事件
+			}
+			else if (Events[i].events & EPOLLERR)
+			{
+				//处理错误
+			}
+		}
+	}
+	close(server);
+	close(Sockets);
+	
+		
+		
+
+
+
+
 
 	
+
+
+
+
+
+
+
+	/* 
+	  * 清理套接字，防止内存泄露
+	  * FD_CLR(server, &ClientSockets);
+	  * shutdown(server, SHUT_RDWR);
+	  */
+
+
 
     return 0;
 }
