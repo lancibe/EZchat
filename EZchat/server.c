@@ -1,21 +1,8 @@
 // 基于C/S模型的服务端
-// gcc server.c -o server -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
+// gcc server.c mysql.c log.c myerr.c -o server -lpthread -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 // i686-w64-mingw32-gcc server.c -o server.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
-#include <mysql/mysql.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/epoll.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <time.h>
-#include <errno.h>
+#include "global.h"
 
 
 void my_err(const char*, int);
@@ -70,6 +57,8 @@ int main(int argc, char** argv)
 	{
 		int num,i;
 		num = epoll_wait(Sockets, Events, 64, 3000);
+		struct sockaddr_in addrs[64];
+		
 		for(i = 0 ; i < num ; i++)
 		{
 			int tempSocket = Events[i].data.fd;
@@ -86,7 +75,7 @@ int main(int argc, char** argv)
 					printf("%s已经连接成功\n", inet_ntoa(ClientMsg.sin_addr));
 					if(send(SocketClient, "服务器信息：你已连接至服务器！", strlen("服务器信息：你已连接至服务器！"), 0) < 0)
 						my_err("send", __LINE__); 
-
+					addrs[i].sin_addr = ClientMsg.sin_addr;
 
 				
 					//给即将上树的结构体初始化
@@ -107,6 +96,7 @@ int main(int argc, char** argv)
 					if(res == 0)
 					{
 						epoll_ctl(Sockets, EPOLL_CTL_DEL, tempSocket, NULL);//下树
+						printf("%s已经离线", inet_ntoa(addrs[i].sin_addr));
 						close(tempSocket);
 					}
 					else if (res < 0)
@@ -117,7 +107,7 @@ int main(int argc, char** argv)
 					do{
 						//将服务器发来的消息打到stdin
 						RecvMsg[res] = '\0';
-						printf("\033[32m%s\033[0m", RecvMsg);
+						printf("\033[34m%s\033[0m", RecvMsg);
 					}while((res = recv(tempSocket, RecvMsg, sizeof(RecvMsg)-1 , 0)) > 0);
 				}	
 			}
@@ -151,51 +141,8 @@ int main(int argc, char** argv)
 
 
 
-	/* 
-	  * 清理套接字，防止内存泄露
-	  * FD_CLR(server, &ClientSockets);
-	  * shutdown(server, SHUT_RDWR);
-	  */
-
 
 
     return 0;
 }
 
-
-
-//自定义错误处理函数
-void my_err(const char* err_string, int line)
-{
-	fprintf(stderr, "line:%d  ", line);
-	perror(err_string);
-	exit(1);
-}
-
-
-
-// 连接数据库
-MYSQL Connect_Database(void)
-{
-    MYSQL mysql;
-    //初始化一个句柄
-    if(NULL == mysql_init(&mysql)) {
-		my_err("mysql_init", __LINE__);
-	}
-
-	//初始化数据库
-	if(mysql_library_init(0, NULL, NULL) != 0) {
-		my_err("mysql_library_init", __LINE__);
-	}
-
-	//连接数据库
-	if(NULL == mysql_real_connect(&mysql, "localhost", "root", "Zhangyixun1", "users_test", 0, NULL, 0)) {
-		my_err("mysql_real_connect",__LINE__);
-	}
-
-	//设置中文字符集
-	if(mysql_set_character_set(&mysql, "utf8") < 0) {
-		my_err("mysql_set_character_set", __LINE__);
-	}
-	return mysql;
-}

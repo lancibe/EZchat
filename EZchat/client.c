@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
     while(1)
     {
-        //向服务器回复信息
+        //向服务器发送信息
         char buf[1500];
         memset(buf, 0, sizeof(buf));
         scanf("%s", buf);
@@ -53,6 +53,8 @@ int main(int argc, char** argv)
         if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__);
     }
+
+
 
 
 
