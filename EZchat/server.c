@@ -4,15 +4,15 @@
 
 
 #include "global.h"
-
-/*线程池的线程数量*/
+//线程池的线程数量
 #define THREAD_MAX 64
 
-/*监听端口*/
+//监听端口
 #define LISTEN_PORT 14233
 
 /* 
-监听端口的数量,从LISTEN_PORT到LISTEN_PORT+LISTEN_MAX-1 
+  * 无用
+  * 监听端口的数量,从LISTEN_PORT到LISTEN_PORT+LISTEN_MAX-1 
 */
 #define LISTEN_MAX 1 
 
