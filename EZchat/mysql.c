@@ -1,5 +1,6 @@
 #include "global.h"
 #include "_mysql.h"
+#include "myerr.h"
 
 
 
