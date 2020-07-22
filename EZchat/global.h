@@ -23,8 +23,11 @@
 #include <poll.h>
 #include <malloc.h>
 #include <pthread.h>
+#include <fcntl.h>
 
 #include "myerr.h"
+#include "log.h"
+#include "_mysql.h"
 
 
 

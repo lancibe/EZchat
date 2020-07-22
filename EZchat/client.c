@@ -1,19 +1,8 @@
 // 基于C/S模型的客户端
 // gcc client.c -o client -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
-#include <mysql/mysql.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <time.h>
-#include <errno.h>
+#include "global.h"
 
-void my_err(const char*, int);
 
 
 
@@ -61,12 +50,3 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
-//自定义错误处理函数
-void my_err(const char* err_string, int line)
-{
-	fprintf(stderr, "line:%d  ", line);
-	perror(err_string);
-
-	exit(1);
-}

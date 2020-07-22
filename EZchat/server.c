@@ -5,13 +5,10 @@
 #include "global.h"
 
 
-void my_err(const char*, int);
-MYSQL Connect_Database(void);
-
-
 
 int main(int argc, char** argv)
 {
+	LogInit();
 	char SendMsg[1500] = {0} ; 
 	char RecvMsg[1500] = {0};
 	MYSQL mysql = Connect_Database();
@@ -50,32 +47,35 @@ int main(int argc, char** argv)
 	struct epoll_event ListenEvent,Events[64];
 	Sockets = epoll_create(64);
 	
-	ListenEvent.events = EPOLLIN;
+	ListenEvent.events = EPOLLIN|EPOLLET;
 	ListenEvent.data.fd = server;
 	epoll_ctl(Sockets, EPOLL_CTL_ADD, server, &ListenEvent);
 	while(1)
 	{
-		int num,i;
+		int num,i, flag;
 		num = epoll_wait(Sockets, Events, 64, 3000);
-		struct sockaddr_in addrs[64];
-		
+		struct sockaddr_in ClientMsg;
+		flag  = fcntl(Sockets, F_GETFL);
+		flag |= O_NONBLOCK;
+		fcntl(Sockets, F_SETFL, flag); 
+
 		for(i = 0 ; i < num ; i++)
 		{
 			int tempSocket = Events[i].data.fd;
-
+			
 			if(Events[i].events & EPOLLIN)
 			{
 				if(tempSocket == server)//说明有新连接
 				{
 					//创建对应新连接用户的套接字
-					struct sockaddr_in ClientMsg;
+					
 					int len = sizeof(ClientMsg);
 					int SocketClient = accept(server, (struct sockaddr*)&ClientMsg, &len);
 					//向客户端发送欢迎信息
 					printf("%s已经连接成功\n", inet_ntoa(ClientMsg.sin_addr));
 					if(send(SocketClient, "服务器信息：你已连接至服务器！", strlen("服务器信息：你已连接至服务器！"), 0) < 0)
 						my_err("send", __LINE__); 
-					addrs[i].sin_addr = ClientMsg.sin_addr;
+	
 
 				
 					//给即将上树的结构体初始化
@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 					if(res == 0)
 					{
 						epoll_ctl(Sockets, EPOLL_CTL_DEL, tempSocket, NULL);//下树
-						printf("%s已经离线", inet_ntoa(addrs[i].sin_addr));
+						printf("%s已经离线\n", inet_ntoa(ClientMsg.sin_addr));
 						close(tempSocket);
 					}
 					else if (res < 0)
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
 
 			else if (Events[i].events & EPOLLERR)
 			{
-				//处理错误
+
 			}
 		}
 	}
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 
 
 
-
+	LogClose();
     return 0;
 }
 

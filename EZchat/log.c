@@ -10,7 +10,7 @@ static pthread_mutex_t LogMutex = PTHREAD_MUTEX_INITIALIZER;
 static int LogLevel = LEVEL_INDISPENSABLE;
 static char LastLogstr[LOG_BUF_LENTH];
 static char CurrentTime[128];
-static char LogFileName[128] = {0};
+static char LogFileName[128] = {"log.txt"};
 
 
 //仅仅为了写文件名
@@ -36,10 +36,10 @@ int LogTime(void)
     return 0;
 }
 
-//打开文件
+//打开文件输入开头
 int LogInit(void)
 {
-    pFile = fopen(LogFileName, "w");
+    pFile = fopen(LogFileName, "a");
     if(pFile == NULL){
         my_err("fopen", __LINE__);
     }
@@ -64,7 +64,7 @@ int LogString(int level, const char* str)
     {
         count = 0;
         fclose(pFile);
-        pFile = fopen(LogFileName, "w");
+        pFile = fopen(LogFileName, "a");
     }
 
     if(strcmp(str, LastLogstr))
@@ -127,7 +127,7 @@ int LogClose(void)
 {
     if(pFile != NULL)
     {
-        LogString(LEVEL_INDISPENSABLE, "LOG END\n:D\n");
+        LogString(LEVEL_INDISPENSABLE, "\nLOG END\t\t\t:D\n");
         fclose(pFile);
     }
     return 0;
