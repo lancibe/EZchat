@@ -1,5 +1,5 @@
 // 基于C/S模型的客户端
-// gcc client.c -o client -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
+// gcc client.c log.c myerr.c mysql.c -o client -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
 #include "global.h"
 
@@ -17,13 +17,15 @@ int main(int argc, char** argv)
         my_err("socket", __LINE__);
 
     //连接服务器
+    printf("111111\n");
     struct sockaddr_in ServerMsg;
     ServerMsg.sin_family = AF_INET;
     ServerMsg.sin_port = htons(14233);
     ServerMsg.sin_addr.s_addr = inet_addr("192.168.31.136");//注意这里的端口号和IP地址一定都是服务器的
     if(connect(server, (struct sockaddr*)&ServerMsg, sizeof(struct sockaddr_in)) < 0)
         my_err("connect", __LINE__);
-    
+    printf("222222\n");
+
 
     //从服务器接收欢迎信息
     int res;
@@ -42,7 +44,7 @@ int main(int argc, char** argv)
         if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__);
     }
-
+    printf("33333\n");
 
 
 
