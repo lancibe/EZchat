@@ -65,7 +65,6 @@ int main(int argc, char** argv)
 	
 	ListenEvent.events = EPOLLIN;
 	ListenEvent.data.fd = server;
-
 	epoll_ctl(Sockets, EPOLL_CTL_ADD, server, &ListenEvent);
 	while(1)
 	{
@@ -83,6 +82,12 @@ int main(int argc, char** argv)
 					struct sockaddr_in ClientMsg;
 					int len = sizeof(ClientMsg);
 					int SocketClient = accept(server, (struct sockaddr*)&ClientMsg, &len);
+					//向客户端发送欢迎信息
+					printf("%s已经连接成功\n", inet_ntoa(ClientMsg.sin_addr));
+					if(send(SocketClient, "服务器信息：你已连接至服务器！", strlen("服务器信息：你已连接至服务器！"), 0) < 0)
+						my_err("send", __LINE__); 
+
+
 				
 					//给即将上树的结构体初始化
 					struct epoll_event tempEvent;
@@ -94,26 +99,34 @@ int main(int argc, char** argv)
 				}
 				else	//这里是有数据到来
 				{
-					int n_data = read(tempSocket, RecvMsg, sizeof(RecvMsg));
-					if(n_data == 0)
+					//接收服务器信息
+					int res;
+					if((res = recv(tempSocket, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
+						my_err("recv", __LINE__);
+
+					if(res == 0)
 					{
 						epoll_ctl(Sockets, EPOLL_CTL_DEL, tempSocket, NULL);//下树
 						close(tempSocket);
 					}
-					else if (n_data < 0)
+					else if (res < 0)
 					{
 						my_err("read", __LINE__);
 					}
 
 					do{
-						//此处处理读出的数据
-					}while((n_data = read(tempSocket, RecvMsg, sizeof(RecvMsg))) > 0);
+						//将服务器发来的消息打到stdin
+						RecvMsg[res] = '\0';
+						printf("\033[32m%s\033[0m", RecvMsg);
+					}while((res = recv(tempSocket, RecvMsg, sizeof(RecvMsg)-1 , 0)) > 0);
 				}	
 			}
+
 			else if (Events[i].events & EPOLLOUT)
 			{
 				//处理写事件
 			}
+
 			else if (Events[i].events & EPOLLERR)
 			{
 				//处理错误

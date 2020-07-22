@@ -36,12 +36,23 @@ int main(int argc, char** argv)
         my_err("connect", __LINE__);
     
 
+    //从服务器接收欢迎信息
     int res;
     if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
-    printf("%s\n", RecvMsg);
+    printf("\033[32m%s\033[0m\n", RecvMsg);
 
+    while(1)
+    {
+        //向服务器回复信息
+        char buf[1500];
+        memset(buf, 0, sizeof(buf));
+        scanf("%s", buf);
+        sprintf(SendMsg, "\033[34m%s\033[1m\n", buf);
+        if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+    }
 
 
 
