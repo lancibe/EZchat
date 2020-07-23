@@ -8,16 +8,13 @@
 //创建两个线程，分别用于收发
 pthread_t SendThread, RecvThread;
 
-void* executeSend(int);
-void* executeRecv(int);
+void* executeSend(void);
+void* executeRecv(void);
 
 //两个线程之间通信变量
-char Msg[1500] = {0};
 char SendMsg[1500] = {0};
 char RecvMsg[1500] = {0};
 
-//服务器套接字
-int server;
 
 int main(int argc, char** argv)
 {
@@ -38,9 +35,9 @@ int main(int argc, char** argv)
 
     void* result;
     //使两个线程开始工作
-    if(0 != pthread_create(&SendThread, 0, (void*) executeSend, NULL))
+    if(0 > pthread_create(&SendThread, 0, (void*) executeSend, NULL))
         my_err("pthread_create", __LINE__);
-    if(0 != pthread_create(&RecvThread, 0, (void*) executeRecv, NULL))
+    if(0 > pthread_create(&RecvThread, 0, (void*) executeRecv, NULL))
         my_err("pthread_create", __LINE__);
     if(0 > pthread_join(RecvThread, &result))
         my_err("pthread_join", __LINE__);
@@ -59,7 +56,7 @@ int main(int argc, char** argv)
 
 
 //线程执行函数
-void * executeSend(int Socket)
+void * executeSend(void)
 {
     int i,j;
     int flag1,flag2;
@@ -79,7 +76,7 @@ void * executeSend(int Socket)
 
 }
 
-void * executeRecv(int Socket)
+void * executeRecv(void)
 {
     //从服务器接收欢迎信息
     int res;
@@ -90,6 +87,10 @@ void * executeRecv(int Socket)
     printf("\033[33m请输入$help$打开帮助文档:D\033[0m\n");
     while(1)
     {
-
+        if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        strncpy(Msg, RecvMsg, res);
+        printf("\033[32m%-s\033[0m\n", RecvMsg);
     }
 }

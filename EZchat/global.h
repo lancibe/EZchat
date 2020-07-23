@@ -30,13 +30,19 @@
 #include "_mysql.h"
 #endif
 
+
+
+#ifdef __CLIENT_C
+//客户端创建的服务器套接字
+static int server;
+static char Msg[1500] = {0};
+#endif // __CLIENT_C
+
 #include "myerr.h"
 #include "log.h"
 #include "orders.h"
-
-
-
-
+#include "reflects.h"
+#include "random.h"
 
 
 

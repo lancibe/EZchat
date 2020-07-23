@@ -6,3 +6,4 @@
 int AnalyseOrder(char* buf);
 int JudgeOrder(char*buf, int flag1, int flag2);
 void Help(void);
+void SignupC(void);

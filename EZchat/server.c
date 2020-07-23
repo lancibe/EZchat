@@ -1,5 +1,5 @@
 // 基于C/S模型的服务端
-// gcc server.c mysql.c log.c myerr.c -o server -lpthread -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
+// gcc server.c mysql.c log.c myerr.c reflects.c random.c -o server -lpthread -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 // i686-w64-mingw32-gcc server.c -o server.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
 #include <mysql/mysql.h>
@@ -236,6 +236,7 @@ void * execute(unsigned int thread_para[])
         //和客户端互动这是交互最重要的部分
         while(1)
         {
+            //接收客户端发来的信息
             int res;
             if((res = recv(sock_cli, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
                 my_err("recv", __LINE__);
@@ -244,8 +245,13 @@ void * execute(unsigned int thread_para[])
                 printf("%s已下线\n", s_listens[pool_index].ip4);
                 break;
             }
+
+            //接收结束，这一部分执行客户端发来的命令
             RecvMsg[res] = '\0';
             sprintf(Msg[pool_index], "%s", RecvMsg);
+            Analyse(Msg[pool_index], sock_cli);
+
+
             printf("%s", Msg[pool_index]);
         }
 
@@ -260,4 +266,5 @@ void * execute(unsigned int thread_para[])
 
     pthread_exit(NULL); 
 }
+
 
