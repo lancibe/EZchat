@@ -31,6 +31,7 @@ int Analyse(char* buf, int ClientSocket)
             }
             else
             {
+                printf("444");
                 int reflect = Reflect(buf, flag1, flag2, ClientSocket);
 
 
@@ -69,6 +70,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     //开始解析命令
     if(strcmp(reflect, "signup") == 0) {
         Signup(ClientSocket);
+        printf("333\n");
     }
     else if(0) {
 
@@ -78,7 +80,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
 
 int Signup(int ClientSocket)
 {
-    char SendMsg[1500]="请输入您的昵称:)\n";
+    char SendMsg[1500]="请输入您的昵称:)";
     char RecvMsg[1500];
     char nickname[21], passwd[21], count[9];
     int len,i,j;
@@ -90,24 +92,55 @@ int Signup(int ClientSocket)
     if((len = recv(ClientSocket, RecvMsg, sizeof(RecvMsg)-1, 0)) < 0)
         my_err("recv", __LINE__);
     RecvMsg[len] = '\0';
+    memset(nickname,0, sizeof(nickname));
     strncpy(nickname, RecvMsg, 20); 
 
 
     //收到了用户发来的昵称后，要发出请输入密码的指示并等待经验证后的
+    printf("888\n");
+    memset(SendMsg, 0, sizeof(SendMsg));
     strcpy(SendMsg, "请输入密码");
+    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)//上一个recv已经收到了昵称，这里应该主动发送指示，让客户端进行输入
+        my_err("send", __LINE__);
+    
+    printf("101010\n");
+    
     if((len = recv(ClientSocket, RecvMsg, sizeof(RecvMsg)-1, 0)) < 0)
         my_err("recv", __LINE__);
     RecvMsg[len] = '\0';
+    printf("999\n");
+
+    memset(passwd, 0, sizeof(passwd));
     strncpy(passwd, RecvMsg, 20);
+
     if(strcmp(passwd, "failed to create") == 0){
+        fprintf(stderr, "密码创建失败");
         return 0;
     }
+
     else {//这时服务器接收到了客户端传来的合法的密码，随机创建一个账户，将其加入到数据库中，且将账号发送给客户
-        for(i = 0 ; i < 8 ; i++){
-            count[i] = Random();
+        while(1)
+        {
+            for(i = 0 ; i < 8 ; i++){                   //这一部分是为客户创建随机数账号
+                count[i] = Random();
+            }
+            if(0 == FindSameCount(count))
+            break;
+            else{
+                printf("return value error\n");
+                break;
+            }
         }
-        count[8] = '\0';
+        count[9] = '\0';
+        memset(SendMsg,0,sizeof(SendMsg));
+        sprintf(SendMsg, "注册成功！你的账号是：%s", count);
+        InsertUser(nickname, count, passwd);
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+
+
     }
+}
 
 
 /* if(strlen(RecvMsg) > 8)
@@ -121,4 +154,3 @@ int Signup(int ClientSocket)
 
 
 
-}

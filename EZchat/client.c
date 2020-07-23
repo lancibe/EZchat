@@ -69,7 +69,7 @@ void * executeSend(void)
         /* sprintf(SendMsg, "\033[34m%s\033[0m\n", buf);
         if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); */
-        AnalyseOrder(buf);
+        AnalyseOrder(buf, server);
     
     }
 
@@ -87,10 +87,16 @@ void * executeRecv(void)
     printf("\033[33m请输入$help$打开帮助文档:D\033[0m\n");
     while(1)
     {
+        if(signal = 1) {
+            pthread_mutex_lock(&mutex);
+        }
+
+
         if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
-        strncpy(Msg, RecvMsg, res);
+        memset(Msg, 0, sizeof(Msg));
+        strcpy(Msg, RecvMsg);
         printf("\033[32m%-s\033[0m\n", RecvMsg);
     }
 }

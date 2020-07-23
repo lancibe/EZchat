@@ -25,23 +25,26 @@
 #include <fcntl.h>
 
 
+//这一部分是为了降低编译难度，客户端不需要的
 # ifndef __CLIENT_C
 #include <mysql/mysql.h>
 #include "_mysql.h"
+#include "reflects.h"
 #endif
 
 
-
+//这一部分是客户端独有的
 #ifdef __CLIENT_C
 //客户端创建的服务器套接字
 static int server;
 static char Msg[1500] = {0};
+static int signal; 
+pthread_mutex_t mutex;
+#include "orders.h"
 #endif // __CLIENT_C
 
 #include "myerr.h"
 #include "log.h"
-#include "orders.h"
-#include "reflects.h"
 #include "random.h"
 
 

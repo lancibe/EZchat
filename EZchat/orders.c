@@ -6,7 +6,7 @@
 
 
 //用于分析指令
-int AnalyseOrder(char* buf)
+int AnalyseOrder(char* buf, int Socket)
 {
     int flag1,flag2,i,j;
     for(i = 0 ; i < 1500 ; i++)
@@ -34,7 +34,7 @@ int AnalyseOrder(char* buf)
             else
             {
                 //找到前后$了，开始执行命令
-                int order = JudgeOrder(buf, flag1, flag2);
+                int order = JudgeOrder(buf, flag1, flag2, Socket);
                 fflush(stdin);
                 if(order == 0)
                 {
@@ -57,7 +57,7 @@ int AnalyseOrder(char* buf)
 
 
 //用于判断指令
-int JudgeOrder(char*buf, int flag1, int flag2)
+int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
 {
     int i,j;
     char order[1500];
@@ -78,7 +78,7 @@ int JudgeOrder(char*buf, int flag1, int flag2)
         Help();
     }
     else if (strcmp(order, "logup") == 0 || strcmp(order, "signup")==0) {
-        
+        SignupC(Socket);
     }
     else {
         fprintf(stderr, "无匹配命令");
@@ -107,37 +107,40 @@ void Help(void)
 
 
 //此命令将打开注册界面
-void SignupC(void)
+void SignupC(int Socket)
 {
     char SendMsg[1500] = "$signup$";
     char RecvMsg[1500];
-    if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
+    signal = 1;//创建信号量之后，请输入昵称就是接受信息的线程最后一次工作，然后就被上锁
+    memset(Msg,0, sizeof(Msg));
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
-    while(1)
-    {
-        if(strcmp(Msg, "请输入您的昵称:)") == 0)
-            break;
-    }
+    printf("111");
+    
+    printf("123\n");
 
-
+    int res;
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
     //这里是用户在收到请输入您的昵称这句话之后，在终端上输入创建的账户昵称
-    printf("\033[32m请输入昵称\033[0m\n");
+    printf("\033[32m%s\033[0m\n", RecvMsg);
     scanf("%s", SendMsg);
-    if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
 
-
+    printf("666\n");
+    memset(RecvMsg, 0, sizeof(RecvMsg));
     //向服务器发送昵称后，要等待接收服务器传来的请输入密码指示
-    while(1)
-    {
-        if(strcmp(Msg, "请输入密码") == 0)
-            break;
-    }
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    
     strcpy(SendMsg, getpass("请输入密码"));
     strcpy(RecvMsg, getpass("请重复输入密码"));
-    if(strcmp(SendMsg, RecvMsg) != 0 || strlen(SendMsg) >=20){
+
+    if(strcmp(SendMsg, RecvMsg) != 0 || strlen(SendMsg) >= 20) {
         printf("\033[32m密码输入出错\033[0m\n");
-        if(send(server, "failed to create", strlen("failed to create"), 0) < 0)
+        if(send(Socket, "failed to create", strlen("failed to create"), 0) < 0)
             my_err("send", __LINE__); 
         return;        
     }
@@ -147,8 +150,14 @@ void SignupC(void)
 
 
     //检测完输入的两次密码的正确性后，将密码发送到服务器，进行账户建立以及随机生成账号
-    if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
-    
-    
+    //接收账号
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    printf("\033[32m%s\033[0m\n", RecvMsg);
+
+    signal = 0;
+    pthread_mutex_unlock(&mutex);
 }
