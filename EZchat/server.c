@@ -10,10 +10,13 @@
 //监听端口
 #define LISTEN_PORT 14233
 
+//线程间通信变量
+char Msg[64][1500];             //每个线程可以通过使用其内部的pool_index来获取相应的变量
+
 /* 
   * 无用
   * 监听端口的数量,从LISTEN_PORT到LISTEN_PORT+LISTEN_MAX-1 
-*/
+  */
 #define LISTEN_MAX 1 
 
 #define SERVER_IP "192.168.31.136" 
@@ -38,7 +41,7 @@ static int init_thread_pool(void);
 //创建监听套接字
 static int init_listen4(char *ip4, int port, int max_link); 
 
-//线程函数 
+//线程函数，创建成了线程对，每两个线程负责对一个客户端进行收发
 void* execute(unsigned int thread_para[]); 
 
 
@@ -80,15 +83,13 @@ int main(int argc, char *argv[])
     } 
 
     //使用epoll族来实现I/O多路复合模型
-    epfd = epoll_create(64); 
+    epfd = epoll_create(32); 
     for (i = 0; i < LISTEN_MAX; i++) 
     { 
         //加入epoll事件集合 
-        ev.events = EPOLLIN; 
+        ev.events = EPOLLIN|EPOLLOUT; 
         ev.data.u32 = i;//记录listen数组下标 
-        if (epoll_ctl(epfd, EPOLL_CTL_ADD, s_listens[i].fd, &ev) < 0) 
-        { 
-            fprintf(stderr, "向epoll集合添加套接字失败:((\r\n"); 
+        if (epoll_ctl(epfd, EPOLL_CTL_ADD, s_listens[i].fd, &ev) < 0)  { 
             my_err("epoll_ctl", __LINE__);
         } 
     } 
@@ -107,9 +108,8 @@ int main(int argc, char *argv[])
             addrlen = sizeof(struct sockaddr_in); 
             memset(&addr4, 0, addrlen);
             sock_cli = accept(sock_listen, (struct sockaddr *)&addr4, &addrlen); 
-            if (sock_cli < 0) 
-            { 
-                fprintf(stderr, "接收客户端连接失败\n"); 
+            if (sock_cli < 0)  { 
+                my_err("accept", __LINE__); 
                 continue; //注意这里是continue，因为客户端连接失败是客户端的问题，和服务器无关，不需要exit
             } 
             //查询空闲线程对 
@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
             s_thread_para[j][2] = listen_index;//服务索引 
             printf("%s已连接\n", s_listens[i].ip4);
             
+
             //线程解锁 
             pthread_mutex_unlock(s_mutex + j); 
         }
@@ -154,10 +155,8 @@ static int init_thread_pool(void)
     for (i = 0; i < THREAD_MAX; i++) 
     { 
         rc = pthread_create(s_tid + i, 0, (void *)execute, (void *)(s_thread_para[i])); 
-        if (0 != rc) 
-        { 
-            fprintf(stderr, "线程创建失败:(\n"); 
-            return(-1); 
+        if (0 != rc) { 
+            my_err("pthread_create", __LINE__);
         } 
     } 
 
@@ -228,7 +227,8 @@ void * execute(unsigned int thread_para[])
         //线程变量内容复制 
         sock_cli = thread_para[1];//客户端套接字 
         listen_index = thread_para[2];//监听索引 
-
+        
+        
         //问好
         send(sock_cli, "服务器信息：你已成功连接!", sizeof("服务器信息：你已成功连接!"), 0);
         
@@ -244,7 +244,8 @@ void * execute(unsigned int thread_para[])
                 break;
             }
             RecvMsg[res] = '\0';
-            printf("\033[35m%s\033[0m", RecvMsg);
+            sprintf(Msg[pool_index], "%s", RecvMsg);
+            printf("%s", Msg[pool_index]);
         }
 
 
@@ -258,3 +259,4 @@ void * execute(unsigned int thread_para[])
 
     pthread_exit(NULL); 
 }
+

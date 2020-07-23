@@ -6,10 +6,9 @@
 #ifndef __GLOBAL_H
 #define __GLOBAL_H
 
-#include <mysql/mysql.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/select.h>
 #include <sys/time.h>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -25,9 +24,15 @@
 #include <pthread.h>
 #include <fcntl.h>
 
+
+# ifndef __CLIENT_C
+#include <mysql/mysql.h>
+#include "_mysql.h"
+#endif
+
 #include "myerr.h"
 #include "log.h"
-#include "_mysql.h"
+
 
 
 
