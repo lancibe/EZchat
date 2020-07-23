@@ -19,30 +19,18 @@ int server;
 
 int main(int argc, char** argv)
 {
-
-
     //创建一个TCP套接字
     server = socket(AF_INET, SOCK_STREAM, 0);
     if(server < 0)
         my_err("socket", __LINE__);
 
     //连接服务器
-    printf("111111\n");
     struct sockaddr_in ServerMsg;
     ServerMsg.sin_family = AF_INET;
     ServerMsg.sin_port = htons(14233);
     ServerMsg.sin_addr.s_addr = inet_addr("192.168.31.136");//注意这里的端口号和IP地址一定都是服务器的
     if(connect(server, (struct sockaddr*)&ServerMsg, sizeof(struct sockaddr_in)) < 0)
         my_err("connect", __LINE__);
-    printf("222222\n");
-
-
-    //从服务器接收欢迎信息
-    int res;
-    if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
-        my_err("recv", __LINE__);
-    RecvMsg[res] = '\0';
-    printf("\033[32m%s\033[0m\n", RecvMsg);
 
 
 
@@ -86,5 +74,14 @@ void * executeSend(int Socket)
 
 void * executeRecv(int Socket)
 {
+    //从服务器接收欢迎信息
+    int res;
+    if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    printf("\033[32m%s\033[0m\n", RecvMsg);
+    while(1)
+    {
 
+    }
 }
