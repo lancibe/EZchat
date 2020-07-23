@@ -1,6 +1,8 @@
 // 基于C/S模型的客户端
-// gcc client.c log.c myerr.c -o client -lpthread -ldl
+// gcc client.c log.c myerr.c orders.c -o client -lpthread -ldl
+#ifndef __CLIENT_C
 #define __CLIENT_C
+#endif
 #include "global.h"
 
 //创建两个线程，分别用于收发
@@ -10,7 +12,7 @@ void* executeSend(int);
 void* executeRecv(int);
 
 //两个线程之间通信变量
-char Msg[1500];
+char Msg[1500] = {0};
 char SendMsg[1500] = {0};
 char RecvMsg[1500] = {0};
 
@@ -59,16 +61,21 @@ int main(int argc, char** argv)
 //线程执行函数
 void * executeSend(int Socket)
 {
+    int i,j;
+    int flag1,flag2;
     while(1)
     {
         //向服务器发送信息
         char buf[1500];
-        memset(buf, 0, sizeof(buf));
+        memset(buf, 0, 1500);
         scanf("%s", buf);
-        sprintf(SendMsg, "\033[34m%s\033[0m\n", buf);
+        /* sprintf(SendMsg, "\033[34m%s\033[0m\n", buf);
         if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
-            my_err("send", __LINE__);
+            my_err("send", __LINE__); */
+        AnalyseOrder(buf);
+    
     }
+
 
 }
 
@@ -79,7 +86,8 @@ void * executeRecv(int Socket)
     if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
-    printf("\033[32m%s\033[0m\n", RecvMsg);
+    printf("\033[32m%-s\033[0m\n", RecvMsg);
+    printf("\033[33m请输入$help$打开帮助文档:D\033[0m\n");
     while(1)
     {
 

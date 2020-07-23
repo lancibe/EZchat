@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
     socklen_t addrlen; //地址信息长度 
     struct sockaddr_in addr4; //IPv4地址结构 
 
+
     //线程池初始化 
     if((rc = init_thread_pool()) != 0)
         my_err("init_thread_pool", __LINE__) ;
