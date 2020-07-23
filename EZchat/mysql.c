@@ -1,6 +1,7 @@
 #include "global.h"
 #include "_mysql.h"
 #include "myerr.h"
+#include <mysql/mysql.h>
 
 
 

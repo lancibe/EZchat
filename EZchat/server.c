@@ -2,7 +2,7 @@
 // gcc server.c mysql.c log.c myerr.c -o server -lpthread -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 // i686-w64-mingw32-gcc server.c -o server.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
-
+#include <mysql/mysql.h>
 #include "global.h"
 //线程池的线程数量
 #define THREAD_MAX 64
@@ -221,7 +221,6 @@ void * execute(unsigned int thread_para[])
   * 这里是大循环套着一个小循环，大循环是，每个线程送走一批又一批的客户端
   * 小循环是在处理过程中，要和客户端进行交互。
   */
-
     while(1)
     {
         pthread_mutex_lock(s_mutex + pool_index);//等待线程解锁 
@@ -245,7 +244,7 @@ void * execute(unsigned int thread_para[])
                 break;
             }
             RecvMsg[res] = '\0';
-            printf("\033[35m%s\033[0m\n", RecvMsg);
+            printf("\033[35m%s\033[0m", RecvMsg);
         }
 
 

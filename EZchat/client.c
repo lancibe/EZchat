@@ -1,5 +1,5 @@
 // 基于C/S模型的客户端
-// gcc client.c log.c myerr.c mysql.c -o client -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
+// gcc client.c log.c myerr.c -o client -lpthread -ldl
 
 #include "global.h"
 
