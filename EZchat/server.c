@@ -250,9 +250,8 @@ void * execute(unsigned int thread_para[])
             RecvMsg[res] = '\0';
             sprintf(Msg[pool_index], "%s", RecvMsg);
             Analyse(Msg[pool_index], sock_cli);
+            memset(Msg[pool_index], 0, sizeof(Msg[pool_index]));
 
-
-            printf("%s", Msg[pool_index]);
         }
 
 

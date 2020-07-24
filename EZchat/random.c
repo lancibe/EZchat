@@ -4,9 +4,14 @@
 #include "random.h"
 
 //此函数仅仅是为了创建随机数
-char Random(void)
+void Random(char* count)
 {
     //创建从数字0到9之间的数字
+    char tempres[16];
+    int temp;  
     srand((unsigned)time(NULL));
-    return (rand()%(57-48+1) +48);
+    temp = rand();
+
+    sprintf(tempres, "%d", temp);
+    strncpy(count, tempres, 8);
 }

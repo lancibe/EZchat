@@ -35,6 +35,7 @@ int AnalyseOrder(char* buf, int Socket)
             {
                 //找到前后$了，开始执行命令
                 int order = JudgeOrder(buf, flag1, flag2, Socket);
+                printf("\033[33m命令执行完毕!\033[0m\n");
                 fflush(stdin);
                 if(order == 0)
                 {
@@ -115,9 +116,6 @@ void SignupC(int Socket)
     memset(Msg,0, sizeof(Msg));
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
-    printf("111");
-    
-    printf("123\n");
 
     int res;
     if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
@@ -128,7 +126,6 @@ void SignupC(int Socket)
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
 
-    printf("666\n");
     memset(RecvMsg, 0, sizeof(RecvMsg));
     //向服务器发送昵称后，要等待接收服务器传来的请输入密码指示
     if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)

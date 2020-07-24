@@ -34,14 +34,20 @@ MYSQL Connect_Database(void)
 
 //查找是否有相同的账号，返回0则没有相同的账号
 //功能需完善
-int FindSameCount(char* count)
+void* FindSameCount(char* count)
 {
 	int res;
 	char order[256];
 	sprintf(order, "select * from Userinfo where count = %s", count);
-	res=mysql_query(&mysql, order);
+	res=mysql_real_query(&mysql, order, strlen(order));
+	if(res)
+		return NULL;
+	else
+	{
+		printf("成功查询到该数据");
+		return 0;
+	}
 
-	return res;
 }
 
 //将用户数据插入数据库
@@ -49,5 +55,6 @@ void InsertUser(char* nickname, char* count, char* passwd)
 {
 	char res[256];
 	sprintf(res, "insert into Userinfo values(default, '%s', %s,'%s')", nickname, count, passwd);
-	mysql_query(&mysql, res);
+	if(!mysql_query(&mysql, res))
+		my_err("mysql_query", __LINE__);
 }

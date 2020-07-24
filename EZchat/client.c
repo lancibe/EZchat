@@ -32,6 +32,14 @@ int main(int argc, char** argv)
         my_err("connect", __LINE__);
 
 
+    //从服务器接收欢迎信息
+    int res;
+    if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    printf("\033[32m%-s\033[0m\n", RecvMsg);
+    printf("\033[33m请输入$help$打开帮助文档:D\033[0m\n");
+
 
     void* result;
     //使两个线程开始工作
@@ -46,7 +54,6 @@ int main(int argc, char** argv)
 
 
 
-    
 
 
 
@@ -78,25 +85,19 @@ void * executeSend(void)
 
 void * executeRecv(void)
 {
-    //从服务器接收欢迎信息
-    int res;
-    if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
-        my_err("recv", __LINE__);
-    RecvMsg[res] = '\0';
-    printf("\033[32m%-s\033[0m\n", RecvMsg);
-    printf("\033[33m请输入$help$打开帮助文档:D\033[0m\n");
+
     while(1)
     {
-        if(signal = 1) {
+        if(signal == 1) {
             pthread_mutex_lock(&mutex);
         }
 
 
-        if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
+/*         if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
         memset(Msg, 0, sizeof(Msg));
         strcpy(Msg, RecvMsg);
-        printf("\033[32m%-s\033[0m\n", RecvMsg);
+        printf("\033[32m%-s\033[0m\n", RecvMsg); */
     }
 }
