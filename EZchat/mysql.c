@@ -63,3 +63,12 @@ void* FindSameCount(char* count, MYSQL mysql)
 	}
 
 }
+
+
+
+//关闭数据库
+void Close_Database(MYSQL mysql)
+{
+	mysql_close(&mysql);
+	mysql_library_end();
+}

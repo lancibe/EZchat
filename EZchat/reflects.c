@@ -70,8 +70,8 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     if(strcmp(reflect, "signup") == 0) {
         Signup(ClientSocket);
     }
-    else if(0) {
-
+    else if(strcmp(reflect, "signin") == 0) {
+        Signin(ClientSocket);
     }
 }
 
@@ -151,16 +151,92 @@ int Signup(int ClientSocket)
         else {  
             printf("已成功将数据写入数据库\n");
         }
-        printf("%s\n", res);
-
-
-        
-
     }
+
+    Close_Database(mysql);
 }
 
 
+void Signin(int ClientSocket)
+{
+    char SendMsg[1500]="请输入您的账号:";
+    char RecvMsg[1500];
+    int len,i,j, flag;
 
+    MYSQL mysql = Connect_Database();
+
+    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));
+
+    int res;
+    //接收客户端发来的账号
+    if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    //匹配账号
+    char temp[256];
+    snprintf(temp, sizeof(temp), "select nickname,count,passwd from userinfo where count = %d", atoi(RecvMsg));
+    char nickname[21], passwd[21], count[9];
+    flag = mysql_real_query(&mysql, RecvMsg, (unsigned int)strlen(RecvMsg));
+    if(!flag)//未找到该账号
+    {
+        strcpy(SendMsg, "未找到该账号");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+        return;
+    }
+    else
+    {
+        strcpy(SendMsg, "请输入密码:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+        memset(SendMsg, 0, sizeof(SendMsg));
+        
+        MYSQL_RES           *result = NULL;
+        MYSQL_ROW           row;
+        MYSQL_FIELD         *field;
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(nickname, row[0]);
+            strcpy(count, row[1]);
+            strcpy(passwd, row[2]);
+        }
+
+        //接收客户端发来的密码
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';       
+
+        //将从客户端接收来的密码和数据库进行比对
+        if(strcmp(RecvMsg, passwd) == 0)
+        {
+            //认证通过
+            sprintf(SendMsg, "%s,欢迎访问EZchat", nickname);
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__);
+            memset(SendMsg, 0, sizeof(SendMsg));
+        }
+        else
+        {
+            sprintf(SendMsg, "密码错误，您已被拒绝访问");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__);
+            memset(SendMsg, 0, sizeof(SendMsg));
+            return;
+        }
+        
+        sprintf(SendMsg, "update userinfo set online = 1 where count = '%s'", count);
+        mysql_query(&mysql, SendMsg);
+        memset(SendMsg, 0, sizeof(SendMsg));
+        Close_Database(mysql);
+    }
+}
 
 
 

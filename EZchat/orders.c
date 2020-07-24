@@ -78,8 +78,11 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     if(strcmp(order, "help") == 0){
         Help();
     }
-    else if (strcmp(order, "logup") == 0 || strcmp(order, "signup")==0) {
+    else if (strcmp(order, "logup") == 0 || strcmp(order, "signup")==0 || strcmp(order, "enroll")==0 || strcmp(order, "register")==0) {
         SignupC(Socket);
+    }
+    else if (strcmp(order, "signin") == 0 || strcmp(order, "login") == 0) {
+        SigninC(Socket);
     }
     else {
         fprintf(stderr, "无匹配命令");
@@ -136,7 +139,7 @@ void SignupC(int Socket)
     strcpy(RecvMsg, getpass("请重复输入密码"));
 
     if(strcmp(SendMsg, RecvMsg) != 0 || strlen(SendMsg) >= 20) {
-        printf("\033[32m密码输入出错\033[0m\n");
+        printf("\033[31m密码输入错误\033[0m\n");
         if(send(Socket, "failed to create", strlen("failed to create"), 0) < 0)
             my_err("send", __LINE__); 
         return;        
@@ -157,4 +160,76 @@ void SignupC(int Socket)
 
     signal = 0;
     pthread_mutex_unlock(&mutex);
+}
+
+
+
+void SigninC(int Socket)
+{
+    //每个指令都应有这一部分，表示向服务器发送语句，让其知道客户端的请求
+    char SendMsg[1500] = "$signin$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));
+
+    //请输入您的账号:
+    int res;
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    printf("\033[32m%s\033[0m\n", RecvMsg);
+    scanf("%s", SendMsg);
+
+    //对输入的账号进行两次检测
+    if(strlen(SendMsg) > 8)
+    {
+        printf("\033[31m账号非法，请重新输入\033[0m\n");
+        return;
+    }
+    for(i = 0 ; i < 8 ; i++)
+    {
+        if(SendMsg[i] > 57 || SendMsg[i] < 48)//说明非数字
+        printf("\033[31m账号非法，请重新输入\033[0m\n");
+        return;
+    }
+
+    //发送账号至服务器
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    //接收服务器回馈
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    if(strcmp(RecvMsg, "未找到该账号") == 0)
+    {
+        printf("\033[31m未找到该账号\033[0m\n");
+        return;
+    }
+    else
+    {//输入密码并且发送
+        strcpy(SendMsg, getpass(RecvMsg));
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+    }
+
+    //接收欢迎信息或者被拒绝访问
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    if(strcmp(RecvMsg, "密码错误，您已被拒绝访问") == 0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return ;
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+    }
+    
 }

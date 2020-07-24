@@ -1,7 +1,5 @@
 $help$:打开帮助文档
-$logup$:打开注册界面
 $signup$:打开注册界面
-$login$:打开登录界面
 $signin$:打开登录界面
 $logout$:注销
 $signout$:注销

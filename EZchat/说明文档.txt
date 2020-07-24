@@ -17,8 +17,12 @@
 请使用Ctrl+F查找您所需的命令
 
 $help$:打开帮助文档
+
 $logup$:打开注册界面
 $signup$:打开注册界面
+$register$:打开注册界面
+$enroll$:打开注册界面
+
 $login$:打开登录界面
 $signin$:打开登录界面
 $logout$:注销

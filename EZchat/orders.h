@@ -1,3 +1,6 @@
+#ifndef __ORDERS_H
+#define __ORDERS_H
+
 #ifndef __CLIENT_C
 #define __CLIENT_C
 #endif // !__CLIENT_C
@@ -7,3 +10,7 @@ int AnalyseOrder(char* buf, int Socket);
 int JudgeOrder(char*buf, int flag1, int flag2, int Socket);
 void Help(void);
 void SignupC(int Socket);
+void SigninC(int Socket);
+
+
+#endif // !__ORDERS_H
