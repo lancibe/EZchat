@@ -6,7 +6,7 @@
 
 MYSQL Connect_Database(void);
 void* FindSameCount(char* count, MYSQL mysql);
-void InsertUser(char* nickname, char* count, char* passwd, MYSQL mysql);
+void InsertUser(char* nickname, char* count, char* passwd);
 
 
 

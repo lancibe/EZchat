@@ -6,7 +6,7 @@
 
 
 //分析客户端发来的信息
-int Analyse(char* buf, int ClientSocket, MYSQL mysql)
+int Analyse(char* buf, int ClientSocket)
 {
     int i,j,flag1,flag2;
     for(i = 0 ; i < 1500 ; i++)
@@ -31,7 +31,7 @@ int Analyse(char* buf, int ClientSocket, MYSQL mysql)
             }
             else
             {
-                int reflect = Reflect(buf, flag1, flag2, ClientSocket, mysql);
+                int reflect = Reflect(buf, flag1, flag2, ClientSocket);
 
 
             }
@@ -52,7 +52,7 @@ int Analyse(char* buf, int ClientSocket, MYSQL mysql)
 
 
 
-int Reflect(char*buf, int flag1, int flag2, int ClientSocket, MYSQL mysql)
+int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
 {
     int i,j;
     char reflect[1500];
@@ -68,7 +68,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket, MYSQL mysql)
 
     //开始解析命令
     if(strcmp(reflect, "signup") == 0) {
-        Signup(ClientSocket, mysql);
+        Signup(ClientSocket);
     }
     else if(0) {
 
@@ -76,13 +76,14 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket, MYSQL mysql)
 }
 
 
-int Signup(int ClientSocket, MYSQL mysql)
+int Signup(int ClientSocket)
 {
     char SendMsg[1500]="请输入您的昵称:)";
     char RecvMsg[1500];
     char nickname[21], passwd[21], count[9];
     int len,i,j;
 
+    MYSQL mysql = Connect_Database();
 
     //向用户发送请输入昵称，并立即进入阻塞，等待接收用户输入的昵称
     if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
@@ -106,9 +107,10 @@ int Signup(int ClientSocket, MYSQL mysql)
 
     memset(passwd, 0, sizeof(passwd));
     strncpy(passwd, RecvMsg, 20);
+    passwd[20] = '\0';
 
     if(strcmp(passwd, "failed to create") == 0){
-        fprintf(stderr, "密码创建失败");
+        fprintf(stderr, "密码创建失败\n");
         return 0;
     }
 
@@ -116,12 +118,13 @@ int Signup(int ClientSocket, MYSQL mysql)
     {//这时服务器接收到了客户端传来的合法的密码，随机创建一个账户，将其加入到数据库中，且将账号发送给客户
         char Nickname[21];
         strcpy(Nickname, nickname);
+        Nickname[20] = '\0';
         while(1)
         {
             Random(count);//这一部分是为客户创建随机数账号
             if(NULL == FindSameCount(count, mysql))
             {
-                count[9] = '\0';
+                count[8] = '\0';
                 memset(SendMsg,0,sizeof(SendMsg));
                 sprintf(SendMsg, "注册成功！你的账号是：%s", count);
                 
@@ -140,10 +143,24 @@ int Signup(int ClientSocket, MYSQL mysql)
             }
         }
         //将用户数据插入数据库
-        InsertUser(Nickname, count, passwd, mysql);
+        int Count = atoi(count);
+        char res[256];
+	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s')", Nickname, Count, passwd);
+        if(!mysql_query(&mysql, res))
+            my_err("mysql_query", __LINE__);    
+        else {  
+            printf("已成功将数据写入数据库\n");
+        }
+        printf("%s\n", res);
+
+
+        
 
     }
 }
+
+
+
 
 
 

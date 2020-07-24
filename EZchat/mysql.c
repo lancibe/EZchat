@@ -4,7 +4,6 @@
 #include <mysql/mysql.h>
 
 
-
 // 连接数据库
 MYSQL Connect_Database(void)
 {
@@ -32,35 +31,35 @@ MYSQL Connect_Database(void)
 }
 
 
+
 //查找是否有相同的账号，返回0则没有相同的账号
 //功能需完善
 void* FindSameCount(char* count, MYSQL mysql)
 {
-	int res;
+	int flag;
 	char order[256];
-	sprintf(order, "select * from Userinfo where count = %s", count);
-	res=mysql_query(&mysql, order);
-	if(!res) {
+	MYSQL_ROW row;
+	MYSQL_RES *res;
+    memset(order, 0, sizeof(order));
+	sprintf(order, "select * from userinfo where count = %s", count);
+    flag=mysql_real_query(&mysql, order, (unsigned int)strlen(order));
+	if(!flag) {
 		printf("未查询到该数据\n");
 		return NULL;
 	}
 	else {
 		printf("成功查询到该数据\n");
-		return 0;
+		res = mysql_store_result(&mysql);
+		while(row = mysql_fetch_row(res))
+		{
+			int i;
+			for(i = 0 ; i < mysql_num_fields(res); i++)
+			{
+				printf("%s\t", row[i]);
+			}
+			printf("\n");
+		}
+		return (int*)0x10;
 	}
 
-}
-
-//将用户数据插入数据库
-void InsertUser(char* nickname, char* count, char* passwd, MYSQL mysql)
-{
-	int Count = atoi(count);
-	char res[256];
-	sprintf(res, "insert into Userinfo values(default, '%s', %d,'%s')", nickname, Count, passwd);
-	if(!mysql_query(&mysql, res))
-		my_err("mysql_query", __LINE__);
-	else {
-		printf("已成功将数据写入数据库\n");
-	}
-	
 }
