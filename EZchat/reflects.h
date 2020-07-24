@@ -3,9 +3,9 @@
 
 #include "global.h"
 
-int Analyse(char* buf, int ClientSocket);
-int Reflect(char*buf, int flag1, int flag2, int ClientSocket);
-int Signup(int ClientSocket);
+int Analyse(char* buf, int ClientSocket, MYSQL mysql);
+int Reflect(char*buf, int flag1, int flag2, int ClientSocket, MYSQL mysql);
+int Signup(int ClientSocket, MYSQL mysql);
 
 
 

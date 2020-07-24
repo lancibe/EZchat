@@ -3,10 +3,10 @@
 #include "global.h"
 
 
-MYSQL mysql;
+
 MYSQL Connect_Database(void);
-void* FindSameCount(char* count);
-void InsertUser(char* nickname, char* count, char* passwd);
+void* FindSameCount(char* count, MYSQL mysql);
+void InsertUser(char* nickname, char* count, char* passwd, MYSQL mysql);
 
 
 

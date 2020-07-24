@@ -6,7 +6,7 @@
 
 
 //分析客户端发来的信息
-int Analyse(char* buf, int ClientSocket)
+int Analyse(char* buf, int ClientSocket, MYSQL mysql)
 {
     int i,j,flag1,flag2;
     for(i = 0 ; i < 1500 ; i++)
@@ -31,7 +31,7 @@ int Analyse(char* buf, int ClientSocket)
             }
             else
             {
-                int reflect = Reflect(buf, flag1, flag2, ClientSocket);
+                int reflect = Reflect(buf, flag1, flag2, ClientSocket, mysql);
 
 
             }
@@ -52,7 +52,7 @@ int Analyse(char* buf, int ClientSocket)
 
 
 
-int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
+int Reflect(char*buf, int flag1, int flag2, int ClientSocket, MYSQL mysql)
 {
     int i,j;
     char reflect[1500];
@@ -68,7 +68,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
 
     //开始解析命令
     if(strcmp(reflect, "signup") == 0) {
-        Signup(ClientSocket);
+        Signup(ClientSocket, mysql);
     }
     else if(0) {
 
@@ -76,7 +76,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
 }
 
 
-int Signup(int ClientSocket)
+int Signup(int ClientSocket, MYSQL mysql)
 {
     char SendMsg[1500]="请输入您的昵称:)";
     char RecvMsg[1500];
@@ -92,7 +92,6 @@ int Signup(int ClientSocket)
     RecvMsg[len] = '\0';
     memset(nickname,0, sizeof(nickname));
     strncpy(nickname, RecvMsg, 20); 
-
 
     //收到了用户发来的昵称后，要发出请输入密码的指示并等待经验证后的
     memset(SendMsg, 0, sizeof(SendMsg));
@@ -113,42 +112,39 @@ int Signup(int ClientSocket)
         return 0;
     }
 
-    else {//这时服务器接收到了客户端传来的合法的密码，随机创建一个账户，将其加入到数据库中，且将账号发送给客户
+    else 
+    {//这时服务器接收到了客户端传来的合法的密码，随机创建一个账户，将其加入到数据库中，且将账号发送给客户
+        char Nickname[21];
+        strcpy(Nickname, nickname);
         while(1)
         {
             Random(count);//这一部分是为客户创建随机数账号
-            if(NULL == FindSameCount(count))
+            if(NULL == FindSameCount(count, mysql))
             {
                 count[9] = '\0';
                 memset(SendMsg,0,sizeof(SendMsg));
                 sprintf(SendMsg, "注册成功！你的账号是：%s", count);
-
+                
+                struct sockaddr_in addr;
+                int length = sizeof(addr);
+                getpeername(ClientSocket, (struct sockaddr*)&addr, &length);
+                printf("%s创建了账号%s,用户名%s,密码%s\n", inet_ntoa(addr.sin_addr), count, Nickname, passwd);
+                
                 if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                     my_err("send", __LINE__); 
                 break;
             }
                 
             else{
-                printf("return value error\n");
-                
+                printf("账号%s已存在，正在重新创建\n",count);
             }
         }
-
-        InsertUser(nickname, count, passwd);
-
+        //将用户数据插入数据库
+        InsertUser(Nickname, count, passwd, mysql);
 
     }
 }
 
-
-/* if(strlen(RecvMsg) > 8)
-    {
-        strcpy(&SendMsg[0], "账号不能超过八位阿拉伯数字");
-        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-            my_err("send", __LINE__); 
-        fprintf(stderr, SendMsg);
-    }
-    */
 
 
 

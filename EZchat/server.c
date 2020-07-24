@@ -44,6 +44,9 @@ static int init_listen4(char *ip4, int port, int max_link);
 //线程函数，创建成了线程对，每两个线程负责对一个客户端进行收发
 void* execute(unsigned int thread_para[]); 
 
+//数据库参数
+MYSQL mysql;
+
 
 
 int main(int argc, char *argv[])
@@ -61,6 +64,9 @@ int main(int argc, char *argv[])
 
     socklen_t addrlen; //地址信息长度 
     struct sockaddr_in addr4; //IPv4地址结构 
+
+    //连接数据库
+    mysql = Connect_Database();
 
 
     //线程池初始化 
@@ -249,7 +255,7 @@ void * execute(unsigned int thread_para[])
             //接收结束，这一部分执行客户端发来的命令
             RecvMsg[res] = '\0';
             sprintf(Msg[pool_index], "%s", RecvMsg);
-            Analyse(Msg[pool_index], sock_cli);
+            Analyse(Msg[pool_index], sock_cli, mysql);
             memset(Msg[pool_index], 0, sizeof(Msg[pool_index]));
 
         }
