@@ -73,6 +73,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "signin") == 0) {
         Signin(ClientSocket);
     }
+    else if (strcmp(reflect, "signout") == 0) {
+        Signout(ClientSocket);
+    }
 }
 
 
@@ -145,7 +148,7 @@ int Signup(int ClientSocket)
         //将用户数据插入数据库
         int Count = atoi(count);
         char res[256];
-	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s',0,-1)", Nickname, Count, passwd);
+	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s',0,-1,'0')", Nickname, Count, passwd);
         if(!mysql_query(&mysql, res))
             my_err("mysql_query", __LINE__);    
         else {  
@@ -255,16 +258,44 @@ void Signin(int ClientSocket)
             return;
         }
         
-        sprintf(SendMsg, "update userinfo set online = 1 where count = '%s'", count);
+        sprintf(SendMsg, "update userinfo set online = 1, socket = %d, ip= '%s' where count = '%s'", ClientSocket, inet_ntoa(addr.sin_addr), count);
         mysql_query(&mysql, SendMsg);
-        memset(SendMsg, 0, sizeof(SendMsg));
-        sprintf(SendMsg, "update userinfo set socket = %d where count = '%s'", ClientSocket, count);
-        mysql_query(&mysql, SendMsg);
-        memset(SendMsg, 0, sizeof(SendMsg));
+        memset(SendMsg, 0, sizeof(SendMsg));       
         Close_Database(mysql);
     }
 }
 
 
 
+void Signout(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag;
 
+    MYSQL mysql;
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        //在线
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "Bye~  :D");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+
+        mysql = Connect_Database();
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "update userinfo set online = 0, socket = -1, ip= '0' where socket = %d", ClientSocket);
+        mysql_query(&mysql, SendMsg);
+        memset(SendMsg, 0, sizeof(SendMsg));
+        Close_Database(mysql);       
+    }
+    else
+    {
+        //不在线
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+        return;
+    }
+}

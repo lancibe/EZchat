@@ -11,6 +11,7 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket);
 void Help(void);
 void SignupC(int Socket);
 void SigninC(int Socket);
+void SignoutC(int Socket);
 
 
 #endif // !__ORDERS_H

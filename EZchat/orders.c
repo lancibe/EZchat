@@ -84,6 +84,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "signin") == 0 || strcmp(order, "login") == 0) {
         SigninC(Socket);
     }
+    else if (strcmp(order, "logout") == 0 || strcmp(order, "signout") == 0) {
+        SignoutC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -110,7 +113,7 @@ void Help(void)
 }
 
 
-//此命令将打开注册界面
+//注册功能
 void SignupC(int Socket)
 {
     char SendMsg[1500] = "$signup$";
@@ -163,7 +166,7 @@ void SignupC(int Socket)
 }
 
 
-
+//登录功能
 void SigninC(int Socket)
 {
     //每个指令都应有这一部分，表示向服务器发送语句，让其知道客户端的请求
@@ -241,5 +244,34 @@ void SigninC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
     }
-    
+}
+
+
+//注销功能
+void SignoutC(int Socket)
+{
+    char SendMsg[1500] = "$signout$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+    }
 }
