@@ -145,7 +145,7 @@ int Signup(int ClientSocket)
         //将用户数据插入数据库
         int Count = atoi(count);
         char res[256];
-	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s')", Nickname, Count, passwd);
+	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s',0)", Nickname, Count, passwd);
         if(!mysql_query(&mysql, res))
             my_err("mysql_query", __LINE__);    
         else {  
