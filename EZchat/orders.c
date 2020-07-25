@@ -87,6 +87,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "logout") == 0 || strcmp(order, "signout") == 0) {
         SignoutC(Socket);
     }
+    else if (strcmp(order, "exit") == 0 || strcmp(order, "quit") == 0) {
+        Exit(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -275,3 +278,15 @@ void SignoutC(int Socket)
         printf("\033[32m%s\033[0m\n", RecvMsg);
     }
 }
+
+
+//退出程序
+void Exit(int Socket)
+{
+    SignoutC(Socket);
+    printf("期待你的下次使用QWQ\n");
+    exit(0);
+}
+
+
+//拉取好友列表，对应的数据库表名是friends

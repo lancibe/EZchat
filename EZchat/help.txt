@@ -1,5 +1,5 @@
 $help$:打开帮助文档
 $signup$:打开注册界面
 $signin$:打开登录界面
-$logout$:注销
 $signout$:注销
+$exit$:退出

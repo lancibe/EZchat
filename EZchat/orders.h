@@ -12,6 +12,7 @@ void Help(void);
 void SignupC(int Socket);
 void SigninC(int Socket);
 void SignoutC(int Socket);
+void Exit(int Socket);
 
 
 #endif // !__ORDERS_H

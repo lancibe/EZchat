@@ -16,15 +16,23 @@
 命令大全:(所有命令应使用英文输入法下的$xxx$来完成)
 请使用Ctrl+F查找您所需的命令
 
-$help$:打开帮助文档
+打开帮助文档:
+        $help$
 
-$logup$:打开注册界面
-$signup$:打开注册界面
-$register$:打开注册界面
-$enroll$:打开注册界面
+打开注册界面:
+        $logup$
+        $signup$
+        $register$
+        $enroll$
 
-$login$:打开登录界面
-$signin$:打开登录界面
-$logout$:注销
-$signout$:注销
+打开登录界面:
+        $signin$
+        $login$
 
+注销:
+        $signout$
+        $logout$
+
+退出:
+        $exit$
+        $quit$
