@@ -36,3 +36,7 @@
 退出:
         $exit$
         $quit$
+
+好友列表:
+        $myfriends$
+        $friendlist$

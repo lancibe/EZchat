@@ -90,6 +90,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "exit") == 0 || strcmp(order, "quit") == 0) {
         Exit(Socket);
     }
+    else if (strcmp(order, "myfriends") == 0 || strcmp(order, "friendlist")) {
+        MyfriendsC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -290,3 +293,49 @@ void Exit(int Socket)
 
 
 //拉取好友列表，对应的数据库表名是friends
+void MyfriendsC(int Socket)
+{
+    char SendMsg[1500] = "$myfriends$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[031m%s\033[0m\n", RecvMsg);
+        return;
+    }
+    else
+    {
+        printf("\033[032m%s[0m\n\n", RecvMsg);
+        while(1)
+        {  
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+
+            if(strcmp(RecvMsg, "\t\t没有更多了...") == 0)
+            {
+                printf("\033[032m%s\033[0m\n\n", RecvMsg);
+                return;
+            }
+            else
+            {
+                printf("%s\n\n", RecvMsg);
+            }
+        }
+        return;
+    }
+}

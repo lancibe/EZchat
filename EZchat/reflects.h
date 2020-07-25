@@ -8,7 +8,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket);
 int Signup(int ClientSocket);
 void Signin(int ClientSocket);
 void Signout(int ClientSocket);
-
+void Myfriends(int ClientSocket);
 
 
 

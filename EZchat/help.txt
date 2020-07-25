@@ -3,3 +3,4 @@ $signup$:打开注册界面
 $signin$:打开登录界面
 $signout$:注销
 $exit$:退出
+$myfriends$:好友列表

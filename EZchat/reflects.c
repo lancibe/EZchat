@@ -76,6 +76,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if (strcmp(reflect, "signout") == 0) {
         Signout(ClientSocket);
     }
+    else if (strcmp(reflect, "myfriends") == 0){
+        Myfriends(ClientSocket);
+    }
 }
 
 
@@ -298,4 +301,100 @@ void Signout(int ClientSocket)
             my_err("send", __LINE__);
         return;
     }
+}
+
+
+void Myfriends(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+
+    MYSQL mysql;
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        //在线
+        mysql = Connect_Database();
+        sprintf(SendMsg, "select id,nickname from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, SendMsg);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        memset(SendMsg, 0, sizeof(SendMsg));     
+        
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "这是你的好友列表:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+
+
+        MYSQL_RES           *result = NULL;
+        MYSQL_ROW           row;
+        MYSQL_FIELD        *field;
+        char id[3],nickname[21];
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(id, row[0]);
+            strcpy(nickname, row[1]);
+        }
+
+        sprintf(SendMsg, "select * from friends where `id` = '%s'", id);
+        flag = mysql_query(&mysql, SendMsg);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        memset(SendMsg, 0, sizeof(SendMsg));     
+        
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            field = mysql_fetch_field(result);
+            for(i = 1 ; i <= MAXUSERNUM ; i++)
+            {
+                
+                if(atoi(row[i]) == 1)
+                {
+                    //数据表中的1代表他是我的好友
+                    //判断出我有哪些好友之后，直接发送到客户端就行了
+                    char temp[256];
+                    sprintf(temp, "select nickname,count from userinfo where `id` = '%s'", field[i].name);
+                    flag1 = mysql_query(&mysql, temp);
+                    if(flag)
+                        my_err("mysql_query", __LINE__);
+                    memset(temp, 0, sizeof(temp));
+                    MYSQL_RES           *result1 = NULL;
+                    MYSQL_ROW           row1;
+                    char nickname1[21], count1[9];
+                    result1 = mysql_store_result(&mysql);
+                    if(result1)
+                    {
+                        row1 = mysql_fetch_row(result1);
+                        strcpy(nickname1, row1[0]);
+                        strcpy(count1, row1[1]);
+                        printf("\t\t账号%s:\t昵称%s\n", count1, nickname1);
+                    }
+                    sprintf(SendMsg, "\t\t账号%s:\t昵称%s", count1, nickname1);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__);
+                    memset(SendMsg, 0, sizeof(SendMsg));
+                }
+            }
+            sprintf(SendMsg, "\t\t没有更多了...");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__);
+            memset(SendMsg, 0, sizeof(SendMsg));
+        }
+        Close_Database(mysql);
+    }
+    else
+    {
+        //不在线
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+        return;
+    }
+    
 }
