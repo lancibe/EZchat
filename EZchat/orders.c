@@ -189,13 +189,23 @@ void SigninC(int Socket)
     if(strlen(SendMsg) > 8)
     {
         printf("\033[31m账号非法，请重新输入\033[0m\n");
+        strcpy(SendMsg, "账号输入出错");
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
         return;
     }
     for(i = 0 ; i < 8 ; i++)
     {
         if(SendMsg[i] > 57 || SendMsg[i] < 48)//说明非数字
-        printf("\033[31m账号非法，请重新输入\033[0m\n");
-        return;
+        {
+            printf("\033[31m账号非法，请重新输入\033[0m\n");
+            strcpy(SendMsg, "账号输入出错");
+             if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+            return;
+        }
     }
 
     //发送账号至服务器

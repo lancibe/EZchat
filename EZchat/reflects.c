@@ -145,7 +145,7 @@ int Signup(int ClientSocket)
         //将用户数据插入数据库
         int Count = atoi(count);
         char res[256];
-	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s',0)", Nickname, Count, passwd);
+	    sprintf(res, "insert into userinfo values(default,'%s',%d,'%s',0,-1)", Nickname, Count, passwd);
         if(!mysql_query(&mysql, res))
             my_err("mysql_query", __LINE__);    
         else {  
@@ -174,27 +174,31 @@ void Signin(int ClientSocket)
     if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
+    if(strcmp(RecvMsg, "账号输入出错") == 0)//接收服务器发来的错误信息
+        return;
+    
+    struct sockaddr_in addr;
+    int length = sizeof(addr);
+    getpeername(ClientSocket, (struct sockaddr*)&addr, &length);
 
     //匹配账号
     char temp[256];
-    snprintf(temp, sizeof(temp), "select nickname,count,passwd from userinfo where count = %d", atoi(RecvMsg));
-    char nickname[21], passwd[21], count[9];
-    flag = mysql_real_query(&mysql, RecvMsg, (unsigned int)strlen(RecvMsg));
-    if(!flag)//未找到该账号
+        //这是为了删去字符串前面的0，防止匹配时出错
+    for(i = 0 ; i < res ; i++)
     {
-        strcpy(SendMsg, "未找到该账号");
-        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-            my_err("send", __LINE__); 
-        memset(SendMsg, 0, sizeof(SendMsg));
-        return;
+        if(RecvMsg[i] == '0')
+            continue;
+        else break;
     }
-    else
+    sprintf(temp, "select nickname,count,passwd from userinfo where count = %s", &RecvMsg[i]);
+    char nickname[21], passwd[21], count[9];
+    flag = mysql_query(&mysql, temp);//这个函数查找成功就返回0，不管查找出来的是什么结果，只有出错才是非0
+    if(flag)//查找出错
     {
-        strcpy(SendMsg, "请输入密码:");
-        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-            my_err("send", __LINE__);
-        memset(SendMsg, 0, sizeof(SendMsg));
-        
+        my_err("mysql_qeury", __LINE__);
+    }
+    else//查找没问题，然后要开始匹配是否有此账号
+    {
         MYSQL_RES           *result = NULL;
         MYSQL_ROW           row;
         MYSQL_FIELD         *field;
@@ -206,6 +210,24 @@ void Signin(int ClientSocket)
             strcpy(count, row[1]);
             strcpy(passwd, row[2]);
         }
+        if(strcmp(&RecvMsg[i], count) == 0)//查找到该账号
+        {
+            printf("%s正在尝试从%s登录\n", &RecvMsg[i], inet_ntoa(addr.sin_addr));
+            strcpy(SendMsg, "请输入密码:");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__);
+            memset(SendMsg, 0, sizeof(SendMsg));
+        }
+        else//查找失败
+        {
+            strcpy(SendMsg, "未找到该账号");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+            return; 
+        }
+        
+
 
         //接收客户端发来的密码
         memset(RecvMsg, 0, sizeof(RecvMsg));
@@ -221,6 +243,7 @@ void Signin(int ClientSocket)
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__);
             memset(SendMsg, 0, sizeof(SendMsg));
+            printf("%s已经成功从%s登录\n", count, inet_ntoa(addr.sin_addr));
         }
         else
         {
@@ -228,10 +251,14 @@ void Signin(int ClientSocket)
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__);
             memset(SendMsg, 0, sizeof(SendMsg));
+            printf("%s未能从%s登录\n", count, inet_ntoa(addr.sin_addr));
             return;
         }
         
         sprintf(SendMsg, "update userinfo set online = 1 where count = '%s'", count);
+        mysql_query(&mysql, SendMsg);
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "update userinfo set socket = %d where count = '%s'", ClientSocket, count);
         mysql_query(&mysql, SendMsg);
         memset(SendMsg, 0, sizeof(SendMsg));
         Close_Database(mysql);
