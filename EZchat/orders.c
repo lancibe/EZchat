@@ -317,12 +317,12 @@ void MyfriendsC(int Socket)
 
     if(strcmp(RecvMsg, "请先登录")==0)
     {
-        printf("\033[031m%s\033[0m\n", RecvMsg);
+        printf("\033[31m%s\033[0m\n", RecvMsg);
         return;
     }
     else
     {
-        printf("\033[032m%s[0m\n\n", RecvMsg);
+        printf("\033[32m%s[0m\n\n", RecvMsg);
         while(1)
         {  
             memset(RecvMsg, 0, sizeof(RecvMsg));
@@ -331,7 +331,7 @@ void MyfriendsC(int Socket)
 
             if(strcmp(RecvMsg, "\t\t没有更多了...") == 0)
             {
-                printf("\033[032m%s\033[0m\n\n", RecvMsg);
+                printf("\033[32m%s\033[0m\n\n", RecvMsg);
                 return;
             }
             else
@@ -366,21 +366,36 @@ void PrivateChatC(int Socket)
 
     if(strcmp(RecvMsg, "请先登录")==0)
     {
-        printf("\033[031m%s\033[0m\n", RecvMsg);
+        printf("\033[31m%s\033[0m\n", RecvMsg);
         return;      
     }
     else
     {
-        printf("\033[032m你想和谁私聊:\033[0m\n");
-        printf("\033[032mnickname:\033[0m");
+        printf("\033[32m你想和谁私聊:\033[0m\n");
+        printf("\033[32mnickname:\033[0m");
         scanf("%s", SendMsg);
         //将被此用户私聊的用户名发送至服务器
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));
+        
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
 
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        printf("\033[33m输入$close$结束聊天\033[0m\n");
 
+        while(1)
+        {
+            scanf("%s", SendMsg);
+            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
 
+            if(strcmp(SendMsg, "$close$") == 0)
+                break;
+        }
     }
-    
 }

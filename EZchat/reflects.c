@@ -3,8 +3,6 @@
 #include "reflects.h"
 
 
-//此变量作为中转信息，用来暂时储存用户发送的聊天信息，只在服务器临时起作用
-char TransitMsg[1500];
 
 
 
@@ -412,8 +410,10 @@ void PrivateChat(int ClientSocket)
     char RecvMsg[1500];
     int len, i, j, flag1,flag;
     int res;
-    int ToClientSocket;
+    char countA[9], countB[9];
     MYSQL mysql;   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW           row;
     if(JudgeOnline(ClientSocket, mysql))
     {
         //确认在线后，先进行接收，接收私聊的用户名
@@ -421,12 +421,22 @@ void PrivateChat(int ClientSocket)
         if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
+        
+        mysql = Connect_Database();
+        sprintf(SendMsg, "select count from userinfo where socket = '%d'", ClientSocket);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        memset(SendMsg, 0, sizeof(SendMsg));     
+        
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(countA, row[0]);//储存A账号
+        }
 
         //收到用户名后，先确认是否有此名
-        MYSQL_RES           *result = NULL;
-        MYSQL_ROW           row;
-        mysql = Connect_Database();
-        sprintf(SendMsg, "select socket from userinfo where nickname = '%s'", RecvMsg);
+        sprintf(SendMsg, "select count from userinfo where nickname = '%s'", RecvMsg);
         flag = mysql_query(&mysql, SendMsg);
         if(flag)
             my_err("mysql_query", __LINE__);
@@ -436,41 +446,40 @@ void PrivateChat(int ClientSocket)
         if(result)
         {
             row = mysql_fetch_row(result);
-            ToClientSocket = atoi(row[0]);
+            strcpy(countB, row[0]);//储存B账号
         }
 
-        if(ToClientSocket == -1)
+        //两项都确认完后，指示客户端开始输入
+        strcpy(SendMsg, "Orz请开始你的表演");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        char TransitMsg[1500];
+        //最新的想法：不管。你爱离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
+        while(1)
         {
-            //说明离线
-        }
-        else
-        {
-            //双方都在线，要建立连接
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+            RecvMsg[res] = '\0';
             
-            char RecvA[1500];
-            char SendA[1500];
-      /* 
-        * 此时 请求私聊方的套接字是ClientSocket,当做A
-        * 被动私聊方的套接字是ToClientSocket,当做B
-        * 使用RecvA,RecvB来获取两边输入的字符串
-        * 使用SendA,SendB来获取两边发送的字符串
-        * 服务器只管中继，接收和发送的具体部分在客户端
-        */
+            if(strcmp(RecvMsg, "$close$") == 0)
+                break;
+            
+            //将用户的信息存入数据库
+            sprintf(TransitMsg, "insert into msg values(default, '%s', '%s', NOW(), 0, '%s'", countA, countB, RecvMsg);
+            if(0 != mysql_query(&mysql, TransitMsg))
+                my_err("mysql_query", __LINE__);
 
-            //在这一部分 只有A的接收和发送(因为对于B来说，也是一样的)
-            pthread_t SendThread,RecvThread;
-            pthread_create(SendThread, 0, SendMsgTo, (void*)ToClientSocket);
-            pthread_create(RecvThread, 0, RecvMsgFrom, (void*)ToClientSocket);
-            void* RESult;
-            pthread_join(SendThread, &RESult);
-            pthread_join(RecvThread, &RESult);
+            memset(TransitMsg, 0, sizeof(TransitMsg));
         }
-        
-
+ 
+        Close_Database(mysql);
     }
     else
     {
-        //不在线
+        //不在线，指A不在线，因为A不在线肯定是无法往数据库存放东西的
         memset(SendMsg, 0, sizeof(SendMsg));
         sprintf(SendMsg, "请先登录");
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
@@ -484,6 +493,8 @@ void PrivateChat(int ClientSocket)
 //这两个函数用于创建两个线程进行私聊、群聊的收发信息
 void* SendMsgTo(int Socket)
 {
+    //这个函数把所有存在数据库里的东西发送出去，其他的都不用管，我只管发，你啥时候上线我啥时候发
+    MYSQL mysql = Connect_Database();
     while(1)
     {
 
@@ -491,6 +502,8 @@ void* SendMsgTo(int Socket)
 }
 void* RecvMsgFrom(int Socket)
 {
+    //这个函数是把所有接收到的信息存到数据库里，其他的他啥都不用管，只管存。
+    MYSQL mysql = Connect_Database();
     while(1)
     {
 
