@@ -562,7 +562,11 @@ void SendDatabaseMsg(int ClientSocket)
             //发送完之后，把数据库中的haveread标记为1，表示已读
             sprintf(TEmp, "update msg set `haveread` = '1' where sendtime='%s' and msg='%s'", row[3], row[5]);
         }
-    }
 
-}//SELECT * FROM EZchat.msg where recvcount=66666666 and haveread = 0;
-//07-27 16:23:36
+        //离线数据发送完之后，给客户端一个信号，让两边都结束程序的运行
+        sprintf(SendMsg, "$finished$");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+    }
+}

@@ -253,6 +253,9 @@ void SigninC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
     }
+
+    //登陆之后接收离线信息
+    RecvDatabaseMsg(Socket);
 }
 
 
@@ -396,6 +399,27 @@ void PrivateChatC(int Socket)
 
             if(strcmp(SendMsg, "$close$") == 0)
                 break;
+        }
+    }
+}
+
+
+//此函数用于在用户登陆之后接收之前的离线信息
+void RecvDatabaseMsg(int Socket)
+{
+    char RecvMsg[1500];
+    int res;
+    while(1)
+    {
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+
+        if(strcmp(RecvMsg, "$finished$") == 0)
+        {
+            printf("\033[33m离线信息接收完毕\033[0m\n");
+            break;
         }
     }
 }
