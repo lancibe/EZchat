@@ -3,6 +3,9 @@
 #include "reflects.h"
 
 
+//此变量作为中转信息，用来暂时储存用户发送的聊天信息，只在服务器临时起作用
+char TransitMsg[1500];
+
 
 
 //分析客户端发来的信息
@@ -80,7 +83,7 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
         Myfriends(ClientSocket);
     }
     else if (strcmp(reflect, "sendmsg") == 0){
-        SendMsgFunc(ClientSocket);
+        PrivateChat(ClientSocket);
     }
 }
 
@@ -403,7 +406,7 @@ void Myfriends(int ClientSocket)
 
 
 
-void SendMsgFunc(int ClientSocket)
+void PrivateChat(int ClientSocket)
 {
     char SendMsg[1500];
     char RecvMsg[1500];
@@ -444,8 +447,8 @@ void SendMsgFunc(int ClientSocket)
         {
             //双方都在线，要建立连接
             
-            char RecvA[1500], RecvB[1500];
-            char SendA[1500], SendB[1500];
+            char RecvA[1500];
+            char SendA[1500];
       /* 
         * 此时 请求私聊方的套接字是ClientSocket,当做A
         * 被动私聊方的套接字是ToClientSocket,当做B
@@ -454,7 +457,13 @@ void SendMsgFunc(int ClientSocket)
         * 服务器只管中继，接收和发送的具体部分在客户端
         */
 
-            
+            //在这一部分 只有A的接收和发送(因为对于B来说，也是一样的)
+            pthread_t SendThread,RecvThread;
+            pthread_create(SendThread, 0, SendMsgTo, (void*)ToClientSocket);
+            pthread_create(RecvThread, 0, RecvMsgFrom, (void*)ToClientSocket);
+            void* RESult;
+            pthread_join(SendThread, &RESult);
+            pthread_join(RecvThread, &RESult);
         }
         
 
@@ -469,4 +478,21 @@ void SendMsgFunc(int ClientSocket)
         return;       
     }
     
+}
+
+
+//这两个函数用于创建两个线程进行私聊、群聊的收发信息
+void* SendMsgTo(int Socket)
+{
+    while(1)
+    {
+
+    }
+}
+void* RecvMsgFrom(int Socket)
+{
+    while(1)
+    {
+
+    }
 }

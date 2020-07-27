@@ -6,3 +6,4 @@ $signout$:注销
 $exit$:退出
 $myfriends$:好友列表
 $sendmsg$:发送私聊信息
+$close$:私聊、群聊时关闭对话

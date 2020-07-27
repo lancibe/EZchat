@@ -9,7 +9,7 @@ int Signup(int ClientSocket);
 void Signin(int ClientSocket);
 void Signout(int ClientSocket);
 void Myfriends(int ClientSocket);
-void SendMsgFunc(int ClientSocket);
+void PrivateChat(int ClientSocket);
 
 
 

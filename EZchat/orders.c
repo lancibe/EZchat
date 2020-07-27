@@ -94,7 +94,7 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
         MyfriendsC(Socket);
     }
     else if(strcmp(order, "sendmsg") == 0 ) {
-        SendMsgC(Socket);
+        PrivateChatC(Socket);
     }
     else {
         fprintf(stderr, "无匹配命令");
@@ -346,7 +346,7 @@ void MyfriendsC(int Socket)
 
 
 //此函数用于收发私聊信息
-void SendMsgC(int Socket)
+void PrivateChatC(int Socket)
 {
     char SendMsg[1500] = "$sendmsg$";
     char RecvMsg[1500];
@@ -379,7 +379,7 @@ void SendMsgC(int Socket)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));
 
-        
+
 
     }
     
