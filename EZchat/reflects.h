@@ -10,6 +10,8 @@ void Signin(int ClientSocket);
 void Signout(int ClientSocket);
 void Myfriends(int ClientSocket);
 void PrivateChat(int ClientSocket);
+void SendDatabaseMsg(int ClientSocket);
+
 
 
 

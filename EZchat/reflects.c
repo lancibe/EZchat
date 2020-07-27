@@ -269,6 +269,9 @@ void Signin(int ClientSocket)
         mysql_query(&mysql, SendMsg);
         memset(SendMsg, 0, sizeof(SendMsg));       
         Close_Database(mysql);
+
+        //用户上线之后，向他发送所有的数据库离线信息
+        SendDatabaseMsg(ClientSocket);
     }
 }
 
@@ -490,22 +493,76 @@ void PrivateChat(int ClientSocket)
 }
 
 
-//这两个函数用于创建两个线程进行私聊、群聊的收发信息
-void* SendMsgTo(int Socket)
+//离线消息发送函数
+void SendDatabaseMsg(int ClientSocket)
 {
-    //这个函数把所有存在数据库里的东西发送出去，其他的都不用管，我只管发，你啥时候上线我啥时候发
+    char SendMsg[1500], RecvMsg[1500];
+    int i,j,flag;
     MYSQL mysql = Connect_Database();
-    while(1)
-    {
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW           row;
+    MYSQL_FIELD       *field;
+    char temp[256];
+    char count[9];
 
-    }
-}
-void* RecvMsgFrom(int Socket)
-{
-    //这个函数是把所有接收到的信息存到数据库里，其他的他啥都不用管，只管存。
-    MYSQL mysql = Connect_Database();
-    while(1)
+    //通过此登陆的账户的套接字获得其账号
+    sprintf(temp, "select count from userinfo where socket = %d", ClientSocket);
+    flag = mysql_query(&mysql, temp);
+    if(flag)
+        my_err("mysql_query", __LINE__);
+    memset(temp, 0, sizeof(temp));     
+    
+    result = mysql_store_result(&mysql);
+    if(result)
     {
-
+        row = mysql_fetch_row(result);
+        strcpy(count, row[0]);
     }
-}
+
+    //获得账号之后，通过账号搜索到所有接收人是该账号的数据条目，并且发送给该套接字
+    sprintf(temp, "select * from msg where recvcount='%s' and haveread = 0", count);
+    flag = mysql_query(&mysql, temp);
+    if(flag)
+        my_err("mysql_query", __LINE__);
+    memset(temp, 0, sizeof(temp));     
+    if(result)
+    {
+        row = mysql_fetch_row(result);
+        for(i = 0 ; i < mysql_num_fields(result) ; i++)
+        {
+            char sendcount[9],recvcount[9];
+            char sendtime[64];
+            char nickname[21];
+            char SendMsgs[1500];
+            strcpy(sendcount, row[1]);
+            strcpy(recvcount, row[2]);
+            strncpy(sendtime, &row[3][6], sizeof(char) * 14);
+            sendtime[14] = '\0';
+            strcpy(SendMsgs, row[5]);
+
+            MYSQL_RES           *result1 = NULL;
+            MYSQL_ROW           row1;
+            char TEmp[256];
+            sprintf(TEmp, "select nickname from userinfo where count = '%s'", sendcount);
+            flag = mysql_query(&mysql, temp);
+            if(flag)
+                my_err("mysql_query", __LINE__);
+            memset(TEmp, 0, sizeof(TEmp));
+            if(result1)
+            {
+                row1 = mysql_fetch_row(result1);
+                strcpy(nickname, row1[0]);
+            }
+
+            //经过一系列垃圾程序，最终还是将数据库中储存的信息一条一条地发到客户端
+            sprintf(SendMsg, "[\033[35m%s\033[0m]\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+            //发送完之后，把数据库中的haveread标记为1，表示已读
+            sprintf(TEmp, "update msg set `haveread` = '1' where sendtime='%s' and msg='%s'", row[3], row[5]);
+        }
+    }
+
+}//SELECT * FROM EZchat.msg where recvcount=66666666 and haveread = 0;
+//07-27 16:23:36
