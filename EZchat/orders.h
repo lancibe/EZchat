@@ -14,6 +14,8 @@ void SigninC(int Socket);
 void SignoutC(int Socket);
 void Exit(int Socket);
 void MyfriendsC(int Socket);
+void SendMsgC(int Socket);
+
 
 
 #endif // !__ORDERS_H

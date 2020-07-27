@@ -79,6 +79,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if (strcmp(reflect, "myfriends") == 0){
         Myfriends(ClientSocket);
     }
+    else if (strcmp(reflect, "sendmsg") == 0){
+        SendMsgFunc(ClientSocket);
+    }
 }
 
 
@@ -321,7 +324,6 @@ void Myfriends(int ClientSocket)
             my_err("mysql_query", __LINE__);
         memset(SendMsg, 0, sizeof(SendMsg));     
         
-        memset(SendMsg, 0, sizeof(SendMsg));
         sprintf(SendMsg, "这是你的好友列表:");
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__);
@@ -395,6 +397,76 @@ void Myfriends(int ClientSocket)
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__);
         return;
+    }
+    
+}
+
+
+
+void SendMsgFunc(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    int ToClientSocket;
+    MYSQL mysql;   
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        //确认在线后，先进行接收，接收私聊的用户名
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+
+        //收到用户名后，先确认是否有此名
+        MYSQL_RES           *result = NULL;
+        MYSQL_ROW           row;
+        mysql = Connect_Database();
+        sprintf(SendMsg, "select socket from userinfo where nickname = '%s'", RecvMsg);
+        flag = mysql_query(&mysql, SendMsg);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        memset(SendMsg, 0, sizeof(SendMsg));     
+        
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            ToClientSocket = atoi(row[0]);
+        }
+
+        if(ToClientSocket == -1)
+        {
+            //说明离线
+        }
+        else
+        {
+            //双方都在线，要建立连接
+            
+            char RecvA[1500], RecvB[1500];
+            char SendA[1500], SendB[1500];
+      /* 
+        * 此时 请求私聊方的套接字是ClientSocket,当做A
+        * 被动私聊方的套接字是ToClientSocket,当做B
+        * 使用RecvA,RecvB来获取两边输入的字符串
+        * 使用SendA,SendB来获取两边发送的字符串
+        * 服务器只管中继，接收和发送的具体部分在客户端
+        */
+
+            
+        }
+        
+
+    }
+    else
+    {
+        //不在线
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+        return;       
     }
     
 }

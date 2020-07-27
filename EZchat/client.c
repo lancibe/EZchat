@@ -13,7 +13,7 @@ void* executeRecv(void);
 
 //两个线程之间通信变量
 char SendMsg[1500] = {0};
-char RecvMsg[1500] = {0};
+char RecvMsg[1500] =  {0};
 
 
 int main(int argc, char** argv)

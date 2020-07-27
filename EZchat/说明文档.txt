@@ -39,3 +39,6 @@
 好友列表:
         $myfriends$
         $friendlist$
+
+发送私聊信息:
+        $sendmsg$
