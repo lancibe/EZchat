@@ -46,6 +46,7 @@ pthread_mutex_t mutex;
 #include "myerr.h"
 #include "log.h"
 #include "random.h"
+#include "ase.h"
 #define MAXUSERNUM 15
 
 

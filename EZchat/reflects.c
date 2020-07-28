@@ -335,7 +335,7 @@ void Myfriends(int ClientSocket)
 
         MYSQL_RES           *result = NULL;
         MYSQL_ROW           row;
-        MYSQL_FIELD        *field;
+        MYSQL_FIELD       *field;
         char id[3],nickname[21];
         result = mysql_store_result(&mysql);
         if(result)

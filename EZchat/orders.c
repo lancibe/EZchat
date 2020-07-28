@@ -421,5 +421,6 @@ void RecvDatabaseMsg(int Socket)
             printf("\033[33m离线信息接收完毕\033[0m\n");
             break;
         }
+        printf("%s", RecvMsg);
     }
 }
