@@ -670,49 +670,49 @@ void CheckFriend(int ClientSocket)
         flag1 = JudgeFriend(ClientSocket, mysql, acount, bcount);
         switch (flag1)
         {
-        case 0:
-            sprintf(SendMsg, "你没有此好友或查无此人");
-            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg));    
-            break;
-        
-        case 1:
-            if(online == 1)
-                sprintf(SendMsg, "你和%s是好友，他在线", nickname);
-            else
-                sprintf(SendMsg, "你和%s是好友，他不在线", nickname);
+            case 0:
+                sprintf(SendMsg, "你没有此好友或查无此人");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));    
+                break;
             
-            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg));    
-            break;
+            case 1:
+                if(online == 1)
+                    sprintf(SendMsg, "你和%s是好友，他在线", nickname);
+                else
+                    sprintf(SendMsg, "你和%s是好友，他不在线", nickname);
+                
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));    
+                break;
 
-        case 2:
-            if(online == 1)
-                sprintf(SendMsg, "%s是你的特别关心好友，他在线", nickname);
-            else
-                sprintf(SendMsg, "%s是你的特别关心好友，他不在线", nickname);
-            
-            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg)); 
-            break;
+            case 2:
+                if(online == 1)
+                    sprintf(SendMsg, "%s是你的特别关心好友，他在线", nickname);
+                else
+                    sprintf(SendMsg, "%s是你的特别关心好友，他不在线", nickname);
+                
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg)); 
+                break;
 
-        case 3:
-            if(online == 1)
-                sprintf(SendMsg, "%s被你拉黑了，他在线", nickname);
-            else
-                sprintf(SendMsg, "%s被你拉黑了，他不在线", nickname);
-            
-            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg)); 
-            break;
+            case 3:
+                if(online == 1)
+                    sprintf(SendMsg, "%s被你拉黑了，他在线", nickname);
+                else
+                    sprintf(SendMsg, "%s被你拉黑了，他不在线", nickname);
+                
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg)); 
+                break;
 
 
-        default:
-            break;
+            default:
+                break;
         }
     }
     else
@@ -722,6 +722,6 @@ void CheckFriend(int ClientSocket)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));    
     }
-    
+
     Close_Database(mysql);
 }
