@@ -234,8 +234,11 @@ void SigninC(int Socket)
     }
     else
     {//输入密码并且发送
-        strcpy(SendMsg, getpass(RecvMsg));
-        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        char* temp = NULL;
+        memset(temp, 0, sizeof(temp));
+        strcpy(SendMsg, getpass(temp));
+        encrypt(SendMsg, &temp);
+        if(send(Socket, temp, strlen(temp), 0) < 0)
             my_err("send", __LINE__); 
     }
 

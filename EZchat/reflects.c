@@ -244,9 +244,11 @@ void Signin(int ClientSocket)
         if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';       
+        char* temp = NULL;
+        decrypt(RecvMsg, &temp, res);
 
         //将从客户端接收来的密码和数据库进行比对
-        if(strcmp(RecvMsg, passwd) == 0)
+        if(strcmp(temp, passwd) == 0)
         {
             //认证通过
             sprintf(SendMsg, "%s,欢迎访问EZchat", nickname);
@@ -322,7 +324,7 @@ void Myfriends(int ClientSocket)
     {
         //在线
         mysql = Connect_Database();
-        sprintf(SendMsg, "select id,nickname from userinfo where socket = '%d'", ClientSocket);
+        sprintf(SendMsg, "select id,count,nickname from userinfo where socket = '%d'", ClientSocket);
         flag = mysql_query(&mysql, SendMsg);
         if(flag)
             my_err("mysql_query", __LINE__);
@@ -336,56 +338,64 @@ void Myfriends(int ClientSocket)
         MYSQL_RES           *result = NULL;
         MYSQL_ROW           row;
         MYSQL_FIELD       *field;
-        char id[3],nickname[21];
+        char id[3],acount[9], bcount[9],nickname[21];
+        int relationship;
         result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
-            strcpy(id, row[0]);
-            strcpy(nickname, row[1]);
+            strcpy(id, row[0]); 
+            strcpy(acount, row[1]);
+            strcpy(nickname, row[2]);
         }
 
-        sprintf(SendMsg, "select * from friends where `id` = '%s'", id);
+        sprintf(SendMsg, "select * from friendship where `acount` = '%s'", acount);
         flag = mysql_query(&mysql, SendMsg);
         if(flag)
             my_err("mysql_query", __LINE__);
         memset(SendMsg, 0, sizeof(SendMsg));     
         
         result = mysql_store_result(&mysql);
+        int num_fields;
         if(result)
         {
-            row = mysql_fetch_row(result);
             field = mysql_fetch_field(result);
-            for(i = 1 ; i <= MAXUSERNUM ; i++)
-            {
-                
-                if(atoi(row[i]) == 1)
-                {
-                    //数据表中的1代表他是我的好友
-                    //判断出我有哪些好友之后，直接发送到客户端就行了
+            num_fields = mysql_num_fields(result);
+
+            while((row=mysql_fetch_row(result)) != NULL){	
+				//打印数据，for循环不知道几列。直到读取完
+				for(i = 0 ; i < num_fields ; i++)
+				{
+                    strcpy(bcount, row[2]);
+                    relationship = atoi(row[3]);
+
+                    //这时候已经得到了 A、B的账号，和A对B的关系
+                    //接下来应该在userinfo中查找到B的昵称 然后发送到客户端
                     char temp[256];
-                    sprintf(temp, "select nickname,count from userinfo where `id` = '%s'", field[i].name);
+                    sprintf(temp, "select nickname from userinfo where `count` = '%s'", bcount);
                     flag1 = mysql_query(&mysql, temp);
                     if(flag)
                         my_err("mysql_query", __LINE__);
                     memset(temp, 0, sizeof(temp));
+
                     MYSQL_RES           *result1 = NULL;
                     MYSQL_ROW           row1;
-                    char nickname1[21], count1[9];
-                    result1 = mysql_store_result(&mysql);
+                    char bnickname[21];
+
                     if(result1)
                     {
                         row1 = mysql_fetch_row(result1);
-                        strcpy(nickname1, row1[0]);
-                        strcpy(count1, row1[1]);
-                        printf("\t\t账号%s:\t昵称%s\n", count1, nickname1);
+                        strcpy(bnickname, row1[0]);
+                        strcpy(bcount, row1[1]);
+                        printf("\t\t账号%s:\t昵称%s\n", bcount, bnickname);
                     }
-                    sprintf(SendMsg, "\t\t账号%s:\t昵称%s", count1, nickname1);
+                    sprintf(SendMsg, "\t\t账号%s:\t昵称%s", bcount, bnickname);
                     if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                         my_err("send", __LINE__);
-                    memset(SendMsg, 0, sizeof(SendMsg));
+                    memset(SendMsg, 0, sizeof(SendMsg)); 
                 }
             }
+            
             sprintf(SendMsg, "\t\t没有更多了...");
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__);

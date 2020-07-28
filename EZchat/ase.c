@@ -1,6 +1,8 @@
 #include "global.h"
 #include "ase.h"
 
+//加密、解密函数使用方法：第一个参数填被操作的字符串地址，第二个参数填操作后的字符串地址的地址，第三个参数recv函数的返回值res
+
 //这个函数将输入字符串加密
 int encrypt(char *input, char **encrypt)
 {
