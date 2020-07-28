@@ -19,7 +19,10 @@ void RecvDatabaseMsg(int Socket);
 void CheckFriendC(int Socket);
 void FindPasswordC(int Socket);
 void ChangePasswordC(int Socket);
-
+void AddFriendC(int Socket);
+void DelFriendC(int Socket);
+void BlockFriendC(int Socket);
+void SpecialCareFriendC(int Socket);
 
 
 

@@ -92,6 +92,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "changepassword") == 0){
         ChangePassword(ClientSocket);
     }
+    else if(strcmp(reflect, "addfriend") == 0 || strcmp(reflect, "delfriend") == 0 || strcmp(reflect, "blockfriend") == 0 || strcmp(reflect, "specialcarefriend") == 0) {
+        ChangeFriend(ClientSocket, reflect[0]);
+    }
 }
 
 
@@ -865,5 +868,106 @@ void ChangePassword(int ClientSocket)
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));    
+    }
+}
+
+
+
+void ChangeFriend(int ClientSocket, char kind)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    char temp[256];
+    char acount[9], bcount[9];
+    MYSQL mysql = Connect_Database();   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW          row;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要进行操作的账号:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg)); 
+        
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(acount, row[0]);
+        }
+        memset(temp, 0, sizeof(temp));
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';  
+        //接收到要进行操作的账号后，先进行检查看有无此账号
+        int order;
+        for(i = 0 ; i < res ; i++)
+        {
+            if(RecvMsg[i] == '0')
+                continue;
+            else 
+                break;
+        }
+        sprintf(temp, "select * from userinfo where count = %s", &RecvMsg[i]);
+        if(mysql_query(&mysql, temp))
+            my_err("mysql_query", __LINE__);
+        strcpy(bcount, &RecvMsg[i]);
+        
+        memset(temp, 0, sizeof(temp));
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            switch (kind)
+            {
+                case 'a':
+                    order = 1;
+                    sprintf(temp, "INSERT INTO `EZchat`.`friendship` (`id`, `acount`, `bcount`, `relationship`) VALUES (default, '%s', '%s', '%d')", acount, bcount, order);
+                    break;
+                
+                case 'd':
+                    order = 0;
+                    sprintf(temp, "DELETE FROM `EZchat`.`friendship` WHERE `acount` = '%s' and `bcount` = '%s'", acount, bcount);
+                    break;
+                
+                case 'b':
+                    order = 3;
+                    sprintf(temp, "UPDATE `EZchat`.`friendship` SET `relationship` = '%d' WHERE `acount` = '%s' and `bcount` = '%s'", order, acount, bcount);
+                    break;
+
+                case 's':
+                    order  = 2;
+                    sprintf(temp, "UPDATE `EZchat`.`friendship` SET `relationship` = '%d' WHERE `acount` = '%s' and `bcount` = '%s'", order, acount, bcount);
+                    break;
+                
+                default:
+                    break;
+            }
+            mysql_query(&mysql, temp);
+            memset(temp, 0, sizeof(temp));
+        }
+        else
+        {
+            sprintf(SendMsg, "账号不存在");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));   
+        }
+            
+
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
     }
 }

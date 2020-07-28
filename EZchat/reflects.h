@@ -14,6 +14,7 @@ void SendDatabaseMsg(int ClientSocket);
 void CheckFriend(int ClientSocket);
 void FindPassword(int ClientSocket);
 void ChangePassword(int ClientSocket);
+void ChangeFriend(int ClientSocket, char kind);
 
 
 

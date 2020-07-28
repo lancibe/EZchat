@@ -105,6 +105,18 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "changepassword") == 0 || strcmp(order, "changepasswd") == 0) {
         ChangePasswordC(Socket);
     }
+    else if (strcmp(order, "addfriend") == 0) {
+        AddFriendC(Socket);
+    }
+    else if (strcmp(order, "delfriend") == 0) {
+        DelFriendC(Socket);
+    }
+    else if(strcmp(order, "blockfriend") == 0) {
+        BlockFriendC(Socket);
+    }
+    else if(strcmp(order, "specialcarefriend") == 0 || strcmp(order, "specialcare") == 0) {
+        SpecialCareFriendC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -605,4 +617,162 @@ void ChangePasswordC(int Socket)
             }
         }
     }
+}
+
+
+
+//下面四个函数分别对应 加好友、删好友、拉黑、特别关心
+void AddFriendC(int Socket)
+{
+    char SendMsg[1500] = "$addfriend$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+    }
+}
+
+
+void DelFriendC(int Socket)
+{
+    char SendMsg[1500] = "$delfriend$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+    }    
+}
+
+
+void BlockFriendC(int Socket)
+{
+    char SendMsg[1500] = "$blockfriend$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';     
+    }    
+}
+
+
+void SpecialCareFriendC(int Socket)
+{
+    char SendMsg[1500] = "$specialcarefriend$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+    }    
 }
