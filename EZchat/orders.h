@@ -17,6 +17,9 @@ void MyfriendsC(int Socket);
 void PrivateChatC(int Socket);
 void RecvDatabaseMsg(int Socket);
 void CheckFriendC(int Socket);
+void FindPasswordC(int Socket);
+void ChangePasswordC(int Socket);
+
 
 
 

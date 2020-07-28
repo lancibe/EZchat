@@ -86,6 +86,12 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if (strcmp(reflect, "checkfriend") == 0){
         CheckFriend(ClientSocket);
     }
+    else if(strcmp(reflect, "findpassword") == 0){
+        FindPassword(ClientSocket);
+    }
+    else if(strcmp(reflect, "changepassword") == 0){
+        ChangePassword(ClientSocket);
+    }
 }
 
 
@@ -93,7 +99,7 @@ int Signup(int ClientSocket)
 {
     char SendMsg[1500]="请输入您的昵称:)";
     char RecvMsg[1500];
-    char nickname[21], passwd[21], count[9];
+    char nickname[21], *passwd, count[9];
     int len,i,j;
 
     MYSQL mysql = Connect_Database();
@@ -117,10 +123,8 @@ int Signup(int ClientSocket)
     if((len = recv(ClientSocket, RecvMsg, sizeof(RecvMsg)-1, 0)) < 0)
         my_err("recv", __LINE__);
     RecvMsg[len] = '\0';
+    decrypt(RecvMsg, &passwd, len);
 
-    memset(passwd, 0, sizeof(passwd));
-    strncpy(passwd, RecvMsg, 20);
-    passwd[20] = '\0';
 
     if(strcmp(passwd, "failed to create") == 0){
         fprintf(stderr, "密码创建失败\n");
@@ -724,4 +728,142 @@ void CheckFriend(int ClientSocket)
     }
 
     Close_Database(mysql);
+}
+
+
+void FindPassword(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    MYSQL mysql = Connect_Database();   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW           row;
+    char temp[256];
+    int id;
+    char *passwd, count[9];
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        //先检测用户是不是以root身份登录的
+        sprintf(temp, "select id from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            id = atoi(row[0]);
+        }
+        if(id != 1)
+        {
+            sprintf(SendMsg, "请以root身份登录");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+            return;
+        }
+        else
+        {
+            //这里，用户既登录账号，又是以root身份登录的开始，修改密码
+            sprintf(SendMsg, "请输入需更改的账号");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+            RecvMsg[res] = '\0';
+
+            //检测账号是否存在
+            for(i = 0 ; i < res ; i++)
+            {
+                if(RecvMsg[i] == '0')
+                    continue;
+                else 
+                    break;
+            }
+            sprintf(temp, "select count,passwd from userinfo where count = %s", &RecvMsg[i]);
+
+            flag = mysql_query(&mysql, temp);//这个函数查找成功就返回0，不管查找出来的是什么结果，只有出错才是非0
+            if(flag)//查找出错
+            {
+                my_err("mysql_qeury", __LINE__);
+            }
+            else//查找没问题，然后要开始匹配是否有此账号
+            {
+                MYSQL_RES           *result = NULL;
+                MYSQL_ROW           row;
+                MYSQL_FIELD         *field;
+                result = mysql_store_result(&mysql);
+                if(result)
+                {
+                    row = mysql_fetch_row(result);
+                    strcpy(count, row[0]);
+                    strcpy(passwd, row[1]);
+                }
+                sprintf(SendMsg, "请输入密码");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));    
+
+                memset(RecvMsg, 0, sizeof(RecvMsg));
+                if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                    my_err("recv", __LINE__);
+                RecvMsg[res] = '\0';
+
+                decrypt(RecvMsg, &passwd, res);
+                sprintf(RecvMsg, "UPDATE `EZchat`.`userinfo` SET `passwd` = '%s' WHERE count = '%s'", passwd, count);
+                if(mysql_query(&mysql, RecvMsg))
+                    my_err("mysql_query", __LINE__);
+            }
+        }
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
+    }
+}
+
+
+
+void ChangePassword(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    MYSQL mysql = Connect_Database();   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW           row;
+    char temp[256];
+    char* passwd;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "输入新密码");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        decrypt(RecvMsg, &passwd, res);
+        sprintf(RecvMsg, "UPDATE `EZchat`.`userinfo` SET `passwd` = '%s' WHERE socket = '%d'", passwd, ClientSocket);
+        mysql_query(&mysql, RecvMsg);
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
+    }
 }

@@ -12,7 +12,8 @@ void Myfriends(int ClientSocket);
 void PrivateChat(int ClientSocket);
 void SendDatabaseMsg(int ClientSocket);
 void CheckFriend(int ClientSocket);
-
+void FindPassword(int ClientSocket);
+void ChangePassword(int ClientSocket);
 
 
 

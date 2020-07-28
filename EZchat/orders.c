@@ -99,6 +99,12 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "checkfriend") == 0 || strcmp(order, "myfriend") == 0) {
         CheckFriendC(Socket);
     }
+    else if (strcmp(order, "forgetpassword") == 0 || strcmp(order, "forgetpasswd") == 0 || strcmp(order, "findpassword") == 0 || strcmp(order, "findpasswd") == 0) {
+        FindPasswordC(Socket);
+    }
+    else if (strcmp(order, "changepassword") == 0 || strcmp(order, "changepasswd") == 0) {
+        ChangePasswordC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -150,10 +156,14 @@ void SignupC(int Socket)
         my_err("recv", __LINE__);
     memset(RecvMsg, 0, sizeof(RecvMsg));
     
+    
     strcpy(SendMsg, getpass("请输入密码"));
     strcpy(RecvMsg, getpass("请重复输入密码"));
+    char* temp;
 
-    if(strcmp(SendMsg, RecvMsg) != 0 || strlen(SendMsg) >= 20) {
+
+    if(strcmp(SendMsg, RecvMsg) != 0 || strlen(SendMsg) >= 20) 
+    {
         printf("\033[31m密码输入错误\033[0m\n");
         if(send(Socket, "failed to create", strlen("failed to create"), 0) < 0)
             my_err("send", __LINE__); 
@@ -163,10 +173,11 @@ void SignupC(int Socket)
         printf("\033[32m密码输入正确，账户创建中...\033[0m\n");
     }
 
-
+    encrypt(SendMsg, &temp);
     //检测完输入的两次密码的正确性后，将密码发送到服务器，进行账户建立以及随机生成账号
-    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+    if(send(Socket, temp, strlen(temp), 0) < 0)
         my_err("send", __LINE__); 
+    memset(temp, 0, sizeof(temp));
     //接收账号
     memset(RecvMsg, 0, sizeof(RecvMsg));
     if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
@@ -477,5 +488,121 @@ void CheckFriendC(int Socket)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
         printf("\033[32m%s\033[0m\n", RecvMsg);
+    }
+}
+
+
+//此函数用于帮助用户找回密码
+void FindPasswordC(int Socket)
+{
+    char SendMsg[1500] = "$findpassword$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        if(strcmp(RecvMsg, "请以root身份登录")==0)
+        {
+            printf("\033[31m%s\033[0m\n", RecvMsg);
+            return;      
+        }
+        else
+        {
+            printf("\033[32m%s\033[0m\n", RecvMsg);
+            scanf("%s", SendMsg);    
+            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+            RecvMsg[res] = '\0';
+            while(1)
+            {
+                char* temp = NULL;
+                memset(temp, 0, sizeof(temp));
+                strcpy(SendMsg, getpass("请输入新密码"));
+                strcpy(RecvMsg, getpass("请重复输入新密码"));
+                if(strcmp(SendMsg, RecvMsg) == 0)
+                {
+                    encrypt(SendMsg, &temp);
+                    if(send(Socket, temp, strlen(temp), 0) < 0)
+                        my_err("send", __LINE__); 
+                    break;
+                }
+                else
+                {
+                    printf("\033[31m输入错误，请重新输入\033[0m\n");
+                }
+            }
+        }
+    }
+    
+}       
+
+
+
+//这个函数用来修改密码
+void ChangePasswordC(int Socket)
+{
+    char SendMsg[1500] = "$changepassword$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        while(1)
+        {
+            char* temp = NULL;
+            memset(temp, 0, sizeof(temp));
+            strcpy(SendMsg, getpass("请输入新密码"));
+            strcpy(RecvMsg, getpass("请重复输入新密码"));
+            if(strcmp(SendMsg, RecvMsg) == 0)
+            {
+                encrypt(SendMsg, &temp);
+                if(send(Socket, temp, strlen(temp), 0) < 0)
+                    my_err("send", __LINE__); 
+                break;
+            }
+            else
+            {
+                printf("\033[31m输入错误，请重新输入\033[0m\n");
+            }
+        }
     }
 }
