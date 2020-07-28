@@ -952,6 +952,10 @@ void ChangeFriend(int ClientSocket, char kind)
             }
             mysql_query(&mysql, temp);
             memset(temp, 0, sizeof(temp));
+            sprintf(SendMsg, "已写入数据库");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));   
         }
         else
         {
