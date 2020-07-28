@@ -447,7 +447,7 @@ void PrivateChat(int ClientSocket)
             row = mysql_fetch_row(result);
             strcpy(countA, row[0]);//储存A账号
         }
-
+        
         //收到用户名后，先确认是否有此名
         sprintf(SendMsg, "select count from userinfo where nickname = '%s'", RecvMsg);
         flag = mysql_query(&mysql, SendMsg);
@@ -462,33 +462,48 @@ void PrivateChat(int ClientSocket)
             strcpy(countB, row[0]);//储存B账号
         }
 
-        //两项都确认完后，指示客户端开始输入
-        strcpy(SendMsg, "Orz请开始你的表演");
-        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-            my_err("send", __LINE__); 
-        memset(SendMsg, 0, sizeof(SendMsg));
-
-        char TransitMsg[1500];
-        //最新的想法：不管。你爱离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
-        while(1)
+        //两个账号都经过确认之后，判断两者好友关系
+        int Judge1 = JudgeFriend(ClientSocket, mysql, countA, countB);
+        int Judge2 = JudgeFriend(ClientSocket, mysql, countB, countA);
+        if((Judge1 == 1 || Judge1 ==2) && (Judge2==1|| Judge2 == 2))
         {
-            memset(RecvMsg, 0, sizeof(RecvMsg));
-            if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
-                my_err("recv", __LINE__);
-            RecvMsg[res] = '\0';
-            
-            if(strcmp(RecvMsg, "$close$") == 0)
-                break;
-            
-            //将用户的信息存入数据库
-            sprintf(TransitMsg, "insert into msg values(default, '%s', '%s', NOW(), 0, '%s'", countA, countB, RecvMsg);
-            if(0 != mysql_query(&mysql, TransitMsg))
-                my_err("mysql_query", __LINE__);
+            //两项都确认完后，指示客户端开始输入
+            strcpy(SendMsg, "Orz请开始你的表演");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
 
-            memset(TransitMsg, 0, sizeof(TransitMsg));
+            char TransitMsg[1500];
+            //最新的想法：不管。你爱离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
+            while(1)
+            {
+                memset(RecvMsg, 0, sizeof(RecvMsg));
+                if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                    my_err("recv", __LINE__);
+                RecvMsg[res] = '\0';
+                
+                if(strcmp(RecvMsg, "$close$") == 0)
+                    break;
+                
+                //将用户的信息存入数据库
+                sprintf(TransitMsg, "insert into msg values(default, '%s', '%s', NOW(), 0, '%s'", countA, countB, RecvMsg);
+                if(0 != mysql_query(&mysql, TransitMsg))
+                    my_err("mysql_query", __LINE__);
+
+                memset(TransitMsg, 0, sizeof(TransitMsg));
+            }
+    
+            Close_Database(mysql);
         }
- 
-        Close_Database(mysql);
+        else{
+            strcpy(SendMsg, "\033[31m你必须先加对方为好友，才能发起对话\033[0m\n");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+            return;
+        }
+
+
     }
     else
     {

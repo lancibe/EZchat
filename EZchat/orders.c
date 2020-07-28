@@ -390,6 +390,12 @@ void PrivateChatC(int Socket)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
 
+        if(strcmp(RecvMsg, "\033[31m你必须先加对方为好友，才能发起对话\033[0m\n") == 0)
+        {
+            printf("%s", RecvMsg);
+            return;
+        }
+
         printf("\033[32m%s\033[0m\n", RecvMsg);
         printf("\033[33m输入$close$结束聊天\033[0m\n");
 
