@@ -83,6 +83,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if (strcmp(reflect, "sendmsg") == 0){
         PrivateChat(ClientSocket);
     }
+    else if (strcmp(reflect, "checkfriend") == 0){
+        CheckFriend(ClientSocket);
+    }
 }
 
 
@@ -594,4 +597,131 @@ void SendDatabaseMsg(int ClientSocket)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));
     }
+}
+
+
+//用于查看某一个好友的状态
+void CheckFriend(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    MYSQL mysql;   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW           row;
+    char acount[9], bcount[9];
+    char nickname[21];
+    char temp[256];
+    int online;
+    
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要查找的好友昵称:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        strcpy(nickname, RecvMsg);
+
+        //从套接字获取acount
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        memset(temp, 0, sizeof(temp));
+        if(flag) {
+                my_err("mysql_query", __LINE__);
+        }
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(acount, row[0]);
+        }
+
+
+
+        //从昵称获取b的在线状态和bcount
+        sprintf(temp, "select online, count from userinfo where nickname =  '%s'", nickname);
+        flag = mysql_query(&mysql, temp);
+        memset(temp, 0, sizeof(temp));
+        if(flag) {
+                my_err("mysql_query", __LINE__);
+        }
+
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            online = atoi(row[0]);
+            strcpy(bcount, row[1]);
+        }
+        else
+        {
+            sprintf(SendMsg, "你没有此好友或查无此人");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+            return;
+        }
+
+        //现在既有acount 又有bcount
+        flag1 = JudgeFriend(ClientSocket, mysql, acount, bcount);
+        switch (flag1)
+        {
+        case 0:
+            sprintf(SendMsg, "你没有此好友或查无此人");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+            break;
+        
+        case 1:
+            if(online == 1)
+                sprintf(SendMsg, "你和%s是好友，他在线", nickname);
+            else
+                sprintf(SendMsg, "你和%s是好友，他不在线", nickname);
+            
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+            break;
+
+        case 2:
+            if(online == 1)
+                sprintf(SendMsg, "%s是你的特别关心好友，他在线", nickname);
+            else
+                sprintf(SendMsg, "%s是你的特别关心好友，他不在线", nickname);
+            
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg)); 
+            break;
+
+        case 3:
+            if(online == 1)
+                sprintf(SendMsg, "%s被你拉黑了，他在线", nickname);
+            else
+                sprintf(SendMsg, "%s被你拉黑了，他不在线", nickname);
+            
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg)); 
+            break;
+
+
+        default:
+            break;
+        }
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
+    }
+    
+    Close_Database(mysql);
 }

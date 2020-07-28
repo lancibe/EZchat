@@ -11,6 +11,7 @@ void Signout(int ClientSocket);
 void Myfriends(int ClientSocket);
 void PrivateChat(int ClientSocket);
 void SendDatabaseMsg(int ClientSocket);
+void CheckFriend(int ClientSocket);
 
 
 

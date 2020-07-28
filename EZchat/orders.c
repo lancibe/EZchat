@@ -96,6 +96,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if(strcmp(order, "sendmsg") == 0 ) {
         PrivateChatC(Socket);
     }
+    else if (strcmp(order, "checkfriend") == 0 || strcmp(order, "myfriend") == 0) {
+        CheckFriendC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -431,5 +434,48 @@ void RecvDatabaseMsg(int Socket)
             break;
         }
         printf("%s", RecvMsg);
+    }
+}
+
+
+//查看好友状态：在线情况，我对他的关系
+void CheckFriendC(int Socket)
+{
+    char SendMsg[1500] = "$checkfriend$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+    //前面这部分完成了和服务器的互动， 先发送指示，再接收回复
+
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        printf("\033[32m%s\033[0m\n", RecvMsg);
     }
 }

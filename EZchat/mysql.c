@@ -125,4 +125,9 @@ int JudgeFriend(int ClientSocket, MYSQL mysql, char acount[9], char bcount[9])
         row = mysql_fetch_row(result);
 		return atoi(row[3]);
     }
+	else
+	{
+		return 0;
+	}
+	
 }
