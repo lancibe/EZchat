@@ -623,3 +623,139 @@ void KickOff(int ClientSocket)
 
     Close_Database(mysql);
 }
+
+
+void MyGroups(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len,i,j,flag;
+    char temp[256];
+    char count[9];
+    char groupcount[9], membercount[9];
+    int num_fields;
+
+    MYSQL mysql = Connect_Database();
+    MYSQL_RES         *result;
+    MYSQL_ROW       row;
+    MYSQL_FIELD     *field;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(count, row[0]);
+        }
+        memset(temp, 0, sizeof(temp));
+    
+
+        sprintf(temp, "select groupcount from groupmember where membercount = '%s'", count);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            field = mysql_fetch_field(result);
+            num_fields = mysql_num_fields(result);
+            
+            while((row=mysql_fetch_row(result)) != NULL)
+            {
+                for(i = 0 ; i < num_fields ; i++)
+                {
+                    sprintf(SendMsg, "\t\t你在群%s内\n", row[0]);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));   
+                }
+            }
+            sprintf(SendMsg, "No More");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));  
+        }
+
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+
+    Close_Database(mysql);
+}
+
+
+void MyGroup(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len,i,j,flag;
+    char temp[256];
+    char count[9];
+    char groupcount[9], membercount[9];
+    int num_fields;
+
+    MYSQL mysql = Connect_Database();
+    MYSQL_RES       *result;
+    MYSQL_ROW      row;
+    MYSQL_FIELD     *field;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要操作的群号");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        int res;
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+
+        sprintf(temp, "select membercount from groupmember where groupcount = '%s'", RecvMsg);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            field = mysql_fetch_field(result);
+            num_fields = mysql_num_fields(result);
+            
+            while((row=mysql_fetch_row(result)) != NULL)
+            {
+                for(i = 0 ; i < num_fields ; i++)
+                {
+                    sprintf(SendMsg, "\t\t%s在群内\n", row[0]);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));   
+                }
+            }
+            sprintf(SendMsg, "No More");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));  
+        }
+
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+
+    Close_Database(mysql);
+}

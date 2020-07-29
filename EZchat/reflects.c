@@ -116,6 +116,12 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "kickoff") == 0) {
         KickOff(ClientSocket);
     }
+    else if(strcmp(reflect, "mygroups") == 0) {
+        MyGroups(ClientSocket);
+    }
+    else if(strcmp(reflect, "mygroup") == 0) {
+        MyGroup(ClientSocket);
+    }
     
 }
 
@@ -1063,31 +1069,35 @@ void ChatHistory(int ClientSocket)
         result = mysql_store_result(&mysql);
         if(result)
         {
-            row = mysql_fetch_row(result);
-            for(i = 0 ; i < mysql_num_fields(result) ; i++)
+            int num_fields;
+            num_fields = mysql_num_fields(result);
+            while((row=mysql_fetch_row(result)) != NULL)
             {
-                char sendcount[9],recvcount[9];
-                char sendtime[64];
-                char SendMsgs[1500];
-                strcpy(sendcount, row[1]);
-                strcpy(recvcount, row[2]);
-                strncpy(sendtime, &row[3][6], sizeof(char) * 14);
-                sendtime[14] = '\0';
-                strcpy(SendMsgs, row[5]);
+                for(i = 0 ; i < num_fields ; i++)
+                {
+                    char sendcount[9],recvcount[9];
+                    char sendtime[64];
+                    char SendMsgs[1500];
+                    strcpy(sendcount, row[1]);
+                    strcpy(recvcount, row[2]);
+                    strncpy(sendtime, &row[3][6], sizeof(char) * 14);
+                    sendtime[14] = '\0';
+                    strcpy(SendMsgs, row[5]);
 
-                if(strcmp(sendcount, acount) == 0)
-                {
-                    sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m你\033[0m对\033[32m%s\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
-                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                        my_err("send", __LINE__); 
-                    memset(SendMsg, 0, sizeof(SendMsg));    
-                }
-                else
-                {
-                    sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
-                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                        my_err("send", __LINE__); 
-                    memset(SendMsg, 0, sizeof(SendMsg));                   
+                    if(strcmp(sendcount, acount) == 0)
+                    {
+                        sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m你\033[0m对\033[32m%s\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
+                        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                            my_err("send", __LINE__); 
+                        memset(SendMsg, 0, sizeof(SendMsg));    
+                    }
+                    else
+                    {
+                        sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
+                        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                            my_err("send", __LINE__); 
+                        memset(SendMsg, 0, sizeof(SendMsg));                   
+                    }
                 }
             }
             sprintf(SendMsg, "$finish$");

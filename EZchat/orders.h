@@ -30,7 +30,8 @@ void JoinGroupC(int Socket);
 void ExitGroupC(int Socket);
 void SetAdminC(int Socket);
 void KickOffC(int Socket);
-
+void MyGroupsC(int Socket);
+void MyGroupC(int Socket);
 
 
 

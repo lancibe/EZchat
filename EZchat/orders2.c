@@ -82,7 +82,7 @@ void DelGroupC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
-        for(i = 0 ; i < 7 ; i++)
+        for(i = 0 ; i < 8 ; i++)
         {
             if(SendMsg[i] > 57 || SendMsg[i] < 48)
             {
@@ -144,7 +144,7 @@ void JoinGroupC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
-        for(i = 0 ; i < 7 ; i++)
+        for(i = 0 ; i < 8 ; i++)
         {
             if(SendMsg[i] > 57 || SendMsg[i] < 48)
             {
@@ -201,7 +201,7 @@ void ExitGroupC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
-        for(i = 0 ; i < 7 ; i++)
+        for(i = 0 ; i < 8 ; i++)
         {
             if(SendMsg[i] > 57 || SendMsg[i] < 48)
             {
@@ -259,7 +259,7 @@ void SetAdminC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
-        for(i = 0 ; i < 7 ; i++)
+        for(i = 0 ; i < 8 ; i++)
         {
             if(SendMsg[i] > 57 || SendMsg[i] < 48)
             {
@@ -286,7 +286,7 @@ void SetAdminC(int Socket)
         {
             printf("\033[32m%s\033[0m", RecvMsg);
             scanf("%s", SendMsg);
-            for(i = 0 ; i < 7 ; i++)
+            for(i = 0 ; i < 8 ; i++)
             {
                 if(SendMsg[i] > 57 || SendMsg[i] < 48)
                 {
@@ -347,7 +347,7 @@ void KickOffC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
-        for(i = 0 ; i < 7 ; i++)
+        for(i = 0 ; i < 8 ; i++)
         {
             if(SendMsg[i] > 57 || SendMsg[i] < 48)
             {
@@ -374,7 +374,7 @@ void KickOffC(int Socket)
         {
             printf("\033[32m%s\033[0m", RecvMsg);
             scanf("%s", SendMsg);
-            for(i = 0 ; i < 7 ; i++)
+            for(i = 0 ; i < 8 ; i++)
             {
                 if(SendMsg[i] > 57 || SendMsg[i] < 48)
                 {
@@ -401,6 +401,122 @@ void KickOffC(int Socket)
         else
         {
             printf("\033[31m%s\033[0m", RecvMsg);
+        }
+    }
+}
+
+
+
+//查看我的群
+void MyGroupsC(int Socket)
+{
+    char SendMsg[1500] = "$mygroups$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));
+
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0'; 
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        while(1)
+        {
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+            RecvMsg[res] = '\0'; 
+            if(strcmp(RecvMsg, "No More") != 0)
+                printf("\033[32m%s\033[0m", RecvMsg);
+            else{
+                break;
+            }
+        }
+    }
+}
+
+
+void MyGroupC(int Socket)
+{
+    char SendMsg[1500] = "$mygroup$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));
+
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0'; 
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+        if(strcmp(RecvMsg, "请输入要查看群成员的群号") == 0)
+        {
+            printf("\033[32m%s\033[0m", RecvMsg);
+            scanf("%s", SendMsg);
+            for(i = 0 ; i < 8 ; i++)
+            {
+                if(SendMsg[i] > 57 || SendMsg[i] < 48)
+                {
+                    printf("\033[31m账号输入出错\033[0m");
+                    sprintf(SendMsg, "close");
+                    SendMsg[5] = '\0';
+                    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));
+                    return;
+                }
+            }
+            //检测账号正确性，然后发送到服务器
+            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+
+            while(1)
+            {
+                memset(RecvMsg, 0, sizeof(RecvMsg));
+                if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                    my_err("recv", __LINE__);
+                RecvMsg[res] = '\0'; 
+                if(strcmp(RecvMsg, "No More") != 0)
+                    printf("\033[32m%s\033[0m", RecvMsg);
+                else{
+                    break;
+                }
+            }        
         }
     }
 }

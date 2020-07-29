@@ -23,6 +23,8 @@ void ExitGroup(int ClientSocket);
 void SetAdmin(int ClientSocket);
 int JudgeMember(int ClientSocket, MYSQL mysql, char* membercount, char* groupcount);
 void KickOff(int ClientSocket);
+void MyGroups(int ClientSocket);
+void MyGroup(int ClientSocket);
 
 
 
