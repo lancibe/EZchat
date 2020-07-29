@@ -47,7 +47,62 @@ void CreateGroupC(int Socket)
         RecvMsg[res] = '\0'; 
 
         printf("\033[32m群账号是%s\033[0m", RecvMsg);
-        
+
     }
-    
+}
+
+
+
+//解散群
+void DelGroupC(int Socket)
+{
+    char SendMsg[1500] = "$delgroup$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));
+
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0'; 
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        for(i = 0 ; i < 7 ; i++)
+        {
+            if(SendMsg[i] > 57 || SendMsg[i] < 48)
+            {
+                printf("\033[31m账号输入出错\033[0m");
+                sprintf(SendMsg, "close");
+                SendMsg[5] = '\0';
+                if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));
+                return;
+            }
+        }
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+        printf("\033[32m%s\033[0m", RecvMsg);
+    }
 }

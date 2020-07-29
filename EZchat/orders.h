@@ -25,6 +25,7 @@ void BlockFriendC(int Socket);
 void SpecialCareFriendC(int Socket);
 void ChatHistoryC(int Socket);
 void CreateGroupC(int Socket);
+void DelGroupC(int Socket);
 
 
 

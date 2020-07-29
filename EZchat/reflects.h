@@ -17,6 +17,7 @@ void ChangePassword(int ClientSocket);
 void ChangeFriend(int ClientSocket, char kind);
 void ChatHistory(int ClientSocket);
 void CreateGroup(int ClientSocket);
+void DelGroup(int ClientSocket);
 
 
 

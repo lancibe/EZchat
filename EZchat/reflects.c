@@ -101,6 +101,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "creategroup") == 0) {
         CreateGroup(ClientSocket);
     }
+    else if(strcmp(reflect, "delgroup") == 0) {
+        DelGroup(ClientSocket);
+    }
 }
 
 
@@ -397,7 +400,7 @@ void Myfriends(int ClientSocket)
                     MYSQL_RES           *result1 = NULL;
                     MYSQL_ROW           row1;
                     char bnickname[21];
-
+                    result1 = mysql_store_result(&mysql);
                     if(result1)
                     {
                         row1 = mysql_fetch_row(result1);
@@ -565,7 +568,8 @@ void SendDatabaseMsg(int ClientSocket)
     flag = mysql_query(&mysql, temp);
     if(flag)
         my_err("mysql_query", __LINE__);
-    memset(temp, 0, sizeof(temp));     
+    memset(temp, 0, sizeof(temp));   
+    result = mysql_store_result(&mysql); 
     if(result)
     {
         row = mysql_fetch_row(result);
@@ -589,6 +593,7 @@ void SendDatabaseMsg(int ClientSocket)
             if(flag)
                 my_err("mysql_query", __LINE__);
             memset(TEmp, 0, sizeof(TEmp));
+            result1= mysql_store_result(&mysql);
             if(result1)
             {
                 row1 = mysql_fetch_row(result1);
@@ -648,6 +653,7 @@ void CheckFriend(int ClientSocket)
         if(flag) {
                 my_err("mysql_query", __LINE__);
         }
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -660,10 +666,10 @@ void CheckFriend(int ClientSocket)
         sprintf(temp, "select online, count from userinfo where nickname =  '%s'", nickname);
         flag = mysql_query(&mysql, temp);
         memset(temp, 0, sizeof(temp));
-        if(flag) {
-                my_err("mysql_query", __LINE__);
-        }
-
+        if(flag) 
+            my_err("mysql_query", __LINE__);
+        
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -760,6 +766,7 @@ void FindPassword(int ClientSocket)
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -902,6 +909,7 @@ void ChangeFriend(int ClientSocket, char kind)
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -1009,6 +1017,7 @@ void ChatHistory(int ClientSocket)
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -1026,6 +1035,7 @@ void ChatHistory(int ClientSocket)
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -1037,6 +1047,7 @@ void ChatHistory(int ClientSocket)
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);

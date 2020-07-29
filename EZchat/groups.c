@@ -45,6 +45,7 @@ void CreateGroup(int ClientSocket)
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
         if(result)
         {
             row = mysql_fetch_row(result);
@@ -64,6 +65,80 @@ void CreateGroup(int ClientSocket)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));   
     }
-    
+}
 
+
+void DelGroup(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len,i,j,flag;
+    char temp[256];
+    char count[9];
+
+    MYSQL mysql = Connect_Database();
+    MYSQL_RES       *result;
+    MYSQL_ROW      row;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要解散的群账号");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(count, row[0]);
+        }
+        memset(temp, 0, sizeof(temp));
+
+        int res;
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+        if(strcmp(RecvMsg, "close"))
+            return;
+        else
+        {
+            sprintf(temp, "select * from groupinfo where grouphost = '%s' and groupcount = '%s'", count, RecvMsg);
+            flag = mysql_query(&mysql, temp);
+            if(flag)
+                my_err("mysql_query", __LINE__);
+            result = mysql_store_result(&mysql);
+            memset(temp, 0, sizeof(temp));
+            if(result)
+            {
+                sprintf(temp, "delete from groupinfo where grouphost = '%s' and groupcount = '%s'", count, RecvMsg);
+                mysql_query(&mysql, temp);
+                memset(temp, 0, sizeof(temp));
+                sprintf(temp, "delete from groupmember where groupcount = '%s'", RecvMsg);
+                sprintf(SendMsg, "该群已被删除");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));   
+            }
+            else
+            {
+                sprintf(SendMsg, "你不是群主或该群不存在");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));   
+            }
+        }        
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
 }
