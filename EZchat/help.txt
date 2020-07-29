@@ -7,3 +7,10 @@ $exit$:退出
 $myfriends$:好友列表
 $sendmsg$:发送私聊信息
 $close$:私聊、群聊时关闭对话
+$checkfriend$:查看好友状态
+$forgetpassword$:找回密码
+$changepassword$:修改密码
+$addfriend$:增加好友
+$delfriend$:删除好友
+$blockfriend$:屏蔽好友
+$specialcare$:特别关心

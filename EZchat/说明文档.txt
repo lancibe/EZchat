@@ -45,3 +45,30 @@
 
 私聊、群聊过程中关闭对话:
         $close$
+
+查看好友状态:
+        $checkfriend$
+        $myfriend$
+
+找回密码:(需管理员权限)
+        $forgetpassword$
+        $forgetpasswd$
+        $findpassword$
+        $findpasswd$
+
+修改密码:
+        $changepassword$
+        $changepasswd$
+
+增加好友:(单方面添加)
+        $addfriend$
+
+删除好友:(单方面删除)
+        $delfriend$
+
+屏蔽好友:(单方面屏蔽)
+        $blockfriend$
+
+特别关心:(单方面特别关心)
+        $specialcarefriend$
+        $specialcare$
