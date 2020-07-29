@@ -19,6 +19,9 @@ void ChatHistory(int ClientSocket);
 void CreateGroup(int ClientSocket);
 void DelGroup(int ClientSocket);
 void JoinGroup(int ClientSocket);
+void ExitGroup(int ClientSocket);
+void SetAdmin(int ClientSocket);
+int JudgeMember(int ClientSocket, MYSQL mysql, char* membercount, char* groupcount);
 
 
 

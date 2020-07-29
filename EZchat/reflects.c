@@ -107,6 +107,12 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "joingroup") == 0) {
         JoinGroup(ClientSocket);
     }
+    else if(strcmp(reflect, "exitgroup") == 0) {
+        ExitGroup(ClientSocket);
+    }
+    else if(strcmp(reflect, "setadmin") == 0) {
+        SetAdmin(ClientSocket);
+    }
     
 }
 
@@ -568,7 +574,7 @@ void SendDatabaseMsg(int ClientSocket)
     }
 
     //获得账号之后，通过账号搜索到所有接收人是该账号的数据条目，并且发送给该套接字
-    sprintf(temp, "select * from msg where recvcount='%s' and haveread = 0 and `group` = 0", count);
+    sprintf(temp, "select * from msg where recvcount='%s' and haveread = 0", count);
     flag = mysql_query(&mysql, temp);
     if(flag)
         my_err("mysql_query", __LINE__);
@@ -1047,7 +1053,7 @@ void ChatHistory(int ClientSocket)
         }
         memset(temp, 0, sizeof(temp));
 
-        sprintf(temp, "select * from userinfo where ((sendcount = '%s' and recvcount = '%s' and `group` = 0) or (sendcount = '%s' and recvcount = '%s' and group = 0))", acount, bcount, bcount, acount);
+        sprintf(temp, "select * from msg where ((sendcount = '%s' and recvcount = '%s') or (sendcount = '%s' and recvcount = '%s'))", acount, bcount, bcount, acount);
         flag = mysql_query(&mysql, temp);
         if(flag)
             my_err("mysql_query", __LINE__);

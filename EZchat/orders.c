@@ -130,6 +130,12 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if(strcmp(order, "joingroup") == 0) {
         JoinGroupC(Socket);
     }
+    else if(strcmp(order, "exitgroup") == 0 || strcmp(order, "quitgroup") == 0) {
+        ExitGroupC(Socket);
+    }
+    else if(strcmp(order, "setadmin") == 0) {
+        SetAdminC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);

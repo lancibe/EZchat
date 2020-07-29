@@ -27,6 +27,8 @@ void ChatHistoryC(int Socket);
 void CreateGroupC(int Socket);
 void DelGroupC(int Socket);
 void JoinGroupC(int Socket);
+void ExitGroupC(int Socket);
+void SetAdminC(int Socket);
 
 
 

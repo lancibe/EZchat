@@ -126,5 +126,4 @@ int JudgeFriend(int ClientSocket, MYSQL mysql, char acount[9], char bcount[9])
 	{
 		return 0;
 	}
-	
 }
