@@ -136,6 +136,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if(strcmp(order, "setadmin") == 0) {
         SetAdminC(Socket);
     }
+    else if (strcmp(order, "kickoff") == 0) {
+        KickOffC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);

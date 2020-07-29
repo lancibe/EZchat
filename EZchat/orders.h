@@ -29,6 +29,7 @@ void DelGroupC(int Socket);
 void JoinGroupC(int Socket);
 void ExitGroupC(int Socket);
 void SetAdminC(int Socket);
+void KickOffC(int Socket);
 
 
 

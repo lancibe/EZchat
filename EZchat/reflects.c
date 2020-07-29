@@ -113,6 +113,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "setadmin") == 0) {
         SetAdmin(ClientSocket);
     }
+    else if(strcmp(reflect, "kickoff") == 0) {
+        KickOff(ClientSocket);
+    }
     
 }
 
