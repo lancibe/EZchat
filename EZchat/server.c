@@ -1,5 +1,5 @@
 // 基于C/S模型的服务端
-// gcc server.c mysql.c log.c myerr.c reflects.c random.c ase.c -o server -lpthread -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -lcrypto -ldl
+// gcc server.c mysql.c log.c myerr.c reflects.c groups.c random.c ase.c -o server -lpthread -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -lcrypto -ldl
 // i686-w64-mingw32-gcc server.c -o server.exe -I/usr/include/mysql -L/usr/lib/mysql -lmysqlclient -ldl
 
 #include <mysql/mysql.h>

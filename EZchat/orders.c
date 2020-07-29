@@ -3,6 +3,7 @@
 #define __CLIENT_C
 #endif // !__CLIENT_C
 #include "global.h"
+#include "orders.h"
 
 
 //用于分析指令
@@ -119,6 +120,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     }
     else if(strcmp(order, "chathistory") == 0 || strcmp(order, "chatlog") == 0) {
         ChatHistoryC(Socket);
+    }
+    else if(strcmp(order, "creategroup") == 0) {
+        CreateGroupC(Socket);
     }
     else {
         fprintf(stderr, "无匹配命令");

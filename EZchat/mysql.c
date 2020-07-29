@@ -79,8 +79,6 @@ void Close_Database(MYSQL mysql)
 //此函数是用于检测套接字参数所表示的ip地址是否在线，在后面的函数中都会用到
 int JudgeOnline(int ClientSocket, MYSQL mysql)
 {
-    mysql = Connect_Database();
-	
 	struct sockaddr_in addr;
     int length = sizeof(addr);
     getpeername(ClientSocket, (struct sockaddr*)&addr, &length);
@@ -100,7 +98,6 @@ int JudgeOnline(int ClientSocket, MYSQL mysql)
             row = mysql_fetch_row(result);
 			char *online;
 			online = row[0];
-			Close_Database(mysql);
 			return atoi(online);
         }
 	}

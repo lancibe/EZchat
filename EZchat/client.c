@@ -1,5 +1,5 @@
 // 基于C/S模型的客户端
-// gcc client.c log.c myerr.c orders.c ase.c -o client -lpthread -lcrypto -ldl
+// gcc client.c log.c myerr.c orders.c orders2.c ase.c -o client -lpthread -lcrypto -ldl
 #ifndef __CLIENT_C
 #define __CLIENT_C
 #endif
