@@ -26,6 +26,9 @@ void SpecialCareFriendC(int Socket);
 void ChatHistoryC(int Socket);
 void CreateGroupC(int Socket);
 void DelGroupC(int Socket);
+void JoinGroupC(int Socket);
+
+
 
 
 

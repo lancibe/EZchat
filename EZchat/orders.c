@@ -127,6 +127,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "delgroup") == 0) {
         DelGroupC(Socket);
     }
+    else if(strcmp(order, "joingroup") == 0) {
+        JoinGroupC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);

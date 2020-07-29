@@ -142,3 +142,97 @@ void DelGroup(int ClientSocket)
         memset(SendMsg, 0, sizeof(SendMsg));   
     }
 }
+
+
+
+void JoinGroup(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len,i,j,flag;
+    char temp[256];
+    char count[9];
+
+    MYSQL mysql = Connect_Database();
+    MYSQL_RES       *result;
+    MYSQL_ROW      row;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要加入的群号");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+
+
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(count, row[0]);
+        }
+        memset(temp, 0, sizeof(temp));
+
+
+        int res;
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; //接收来的是群号
+
+        sprintf(temp, "select * from groupinfo where groupcount = '%s'",  RecvMsg);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        memset(temp, 0, sizeof(temp));
+        if(result)
+        {
+            sprintf(temp, "select status from groupmember where groupcount = '%s' and membercount = '%s'", RecvMsg, count);
+            flag = mysql_query(&mysql, temp);
+            if(flag)
+                my_err("mysql_query", __LINE__);
+            result = mysql_store_result(&mysql);
+            if(result)
+            {
+                row = mysql_fetch_row(result);
+                sprintf(SendMsg, "你已在群中");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));   
+            }
+            else
+            {
+                sprintf(temp, "INSERT INTO `EZchat`.`groupmember` (`id`, `groupcount`, `membercount`, `status`) VALUES (default, '%s', '%s', '5')", RecvMsg, count);
+                flag = mysql_query(&mysql, temp);
+                if(flag)
+                    my_err("mysql_query", __LINE__);        
+
+                sprintf(SendMsg, "已申请加群");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));       
+            }
+        }
+        else
+        {
+            sprintf(SendMsg, "该群号不存在");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+        }
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+
+    Close_Database(mysql);
+}

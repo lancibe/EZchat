@@ -104,6 +104,10 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "delgroup") == 0) {
         DelGroup(ClientSocket);
     }
+    else if(strcmp(reflect, "joingroup") == 0) {
+        JoinGroup(ClientSocket);
+    }
+    
 }
 
 
