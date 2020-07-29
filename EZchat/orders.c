@@ -117,6 +117,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if(strcmp(order, "specialcarefriend") == 0 || strcmp(order, "specialcare") == 0) {
         SpecialCareFriendC(Socket);
     }
+    else if(strcmp(order, "chathistory") == 0 || strcmp(order, "chatlog") == 0) {
+        ChatHistoryC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);
@@ -775,4 +778,49 @@ void SpecialCareFriendC(int Socket)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0'; 
     }    
+}
+
+
+//该函数用于查找聊天记录
+void ChatHistoryC(int Socket)
+{
+    char SendMsg[1500] = "$ChatHistory$";    
+    char RecvMsg[1500];
+    signal = 1;
+    int i, res;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0'; 
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
+
+        while(1)
+        {
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+            RecvMsg[res] = '\0'; 
+            if(strcmp(RecvMsg, "$finish$") == 0)
+                break;
+            printf("%s", RecvMsg);
+        }
+    } 
 }

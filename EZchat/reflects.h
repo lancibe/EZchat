@@ -15,6 +15,7 @@ void CheckFriend(int ClientSocket);
 void FindPassword(int ClientSocket);
 void ChangePassword(int ClientSocket);
 void ChangeFriend(int ClientSocket, char kind);
+void ChatHistory(int ClientSocket);
 
 
 

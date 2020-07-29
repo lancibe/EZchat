@@ -95,6 +95,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "addfriend") == 0 || strcmp(reflect, "delfriend") == 0 || strcmp(reflect, "blockfriend") == 0 || strcmp(reflect, "specialcarefriend") == 0) {
         ChangeFriend(ClientSocket, reflect[0]);
     }
+    else if(strcmp(reflect, "ChatHistory") == 0) {
+        ChatHistory(ClientSocket);
+    }
 }
 
 
@@ -974,4 +977,108 @@ void ChangeFriend(int ClientSocket, char kind)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));   
     }
+}
+
+
+void ChatHistory(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    char temp[256];
+    char acount[9],bcount[9];
+    char nickname[21];
+    MYSQL mysql = Connect_Database();   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW          row;
+    MYSQL_FIELD        *field;
+
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要进行操作的好友昵称:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg)); 
+
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(acount, row[0]);
+        }
+        strcpy(nickname, RecvMsg);
+        memset(temp, 0, sizeof(temp));
+
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+
+        sprintf(temp, "select count from userinfo where nickname='%s'", RecvMsg);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(bcount, row[0]);
+        }
+        memset(temp, 0, sizeof(temp));
+
+        sprintf(temp, "select * from userinfo where ((sendcount = '%s' and recvcount = '%s') or (sendcount = '%s' and recvcount = '%s'))", acount, bcount, bcount, acount);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            for(i = 0 ; i < mysql_num_fields(result) ; i++)
+            {
+                char sendcount[9],recvcount[9];
+                char sendtime[64];
+                char SendMsgs[1500];
+                strcpy(sendcount, row[1]);
+                strcpy(recvcount, row[2]);
+                strncpy(sendtime, &row[3][6], sizeof(char) * 14);
+                sendtime[14] = '\0';
+                strcpy(SendMsgs, row[5]);
+
+                if(strcmp(sendcount, acount) == 0)
+                {
+                    sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m你\033[0m对\033[32m%s\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));    
+                }
+                else
+                {
+                    sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));                   
+                }
+            }
+            sprintf(SendMsg, "$finish$");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));             
+        }
+
+
+
+
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+    
 }
