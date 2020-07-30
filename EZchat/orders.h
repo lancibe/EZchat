@@ -32,6 +32,7 @@ void SetAdminC(int Socket);
 void KickOffC(int Socket);
 void MyGroupsC(int Socket);
 void MyGroupC(int Socket);
+void GroupChatHistoryC(int Socket);
 
 
 

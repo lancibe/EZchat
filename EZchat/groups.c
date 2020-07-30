@@ -759,3 +759,90 @@ void MyGroup(int ClientSocket)
 
     Close_Database(mysql);
 }
+
+
+
+void GroupChatHistory(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len,i,j,flag;
+    char temp[256];
+    char count[9];
+    char groupcount[9];
+    int num_fields;
+
+    MYSQL mysql = Connect_Database();
+    MYSQL_RES       *result;
+    MYSQL_ROW      row;
+    MYSQL_FIELD     *field;
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要操作的群号");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        int res;
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+        strcpy(groupcount, RecvMsg);
+        
+        //获取账号
+        sprintf(temp, "select count from userinfo where socket = '%d'", ClientSocket);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(count, row[0]);
+        }
+        memset(temp, 0, sizeof(temp));
+
+        sprintf(temp, "select * from groupmsg where recvgroup = '%s'", groupcount);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            int num_fields;
+            num_fields = mysql_num_fields(result);
+            while((row=mysql_fetch_row(result)) != NULL)
+            {
+                for(i = 0 ; i < num_fields ; i++)
+                {
+                    char sendtime[64];
+                    char SendMsgs[1024];
+                    char sendcount[9];
+                    strcpy(sendcount, row[1]);
+                    strcpy(sendtime, row[3]);
+                    strcpy(SendMsgs, row[4]);
+
+                    sprintf(SendMsg, "[\033[35m%s\033[0m]\033[32m%s\033[0m说:\n\t%s", sendtime, sendcount, SendMsgs);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));
+                }
+            }
+            sprintf(SendMsg, "$close$");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+        }
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+
+    Close_Database(mysql);
+}

@@ -122,7 +122,9 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "mygroup") == 0) {
         MyGroup(ClientSocket);
     }
-    
+    else if(strcmp(reflect, "groupchathistory") == 0) {
+        GroupChatHistory(ClientSocket);
+    }
 }
 
 
@@ -1077,7 +1079,7 @@ void ChatHistory(int ClientSocket)
                 {
                     char sendcount[9],recvcount[9];
                     char sendtime[64];
-                    char SendMsgs[1500];
+                    char SendMsgs[1024];
                     strcpy(sendcount, row[1]);
                     strcpy(recvcount, row[2]);
                     strncpy(sendtime, &row[3][6], sizeof(char) * 14);

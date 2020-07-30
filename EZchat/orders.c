@@ -145,6 +145,9 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if(strcmp(order, "mygroup") == 0) {
         MyGroupC(Socket);
     }
+    else if(strcmp(order, "groupchathistory") == 0) {
+        GroupChatHistoryC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);

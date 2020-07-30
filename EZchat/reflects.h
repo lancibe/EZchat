@@ -25,6 +25,7 @@ int JudgeMember(int ClientSocket, MYSQL mysql, char* membercount, char* groupcou
 void KickOff(int ClientSocket);
 void MyGroups(int ClientSocket);
 void MyGroup(int ClientSocket);
+void GroupChatHistory(int ClientSocket);
 
 
 
