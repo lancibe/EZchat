@@ -26,6 +26,9 @@ void KickOff(int ClientSocket);
 void MyGroups(int ClientSocket);
 void MyGroup(int ClientSocket);
 void GroupChatHistory(int ClientSocket);
+void * Send(int ClientSocket);
+void * Recv(int ClientSocket);
+
 
 
 

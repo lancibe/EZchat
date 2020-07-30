@@ -514,7 +514,19 @@ void PrivateChat(int ClientSocket)
             memset(SendMsg, 0, sizeof(SendMsg));
 
             char TransitMsg[1500];
-            //最新的想法：不管。你爱离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
+            
+
+            //检测一下对方是否在线，如果离线，就按之前的来把所有的输入全部存入数据库
+            //如果在线，则存入后可以直接发送
+            int ClientSocketB;
+            MYSQL_RES           *result2 = NULL;
+            MYSQL_ROW           row2;
+            char query[256];
+            sprintf(query, "select * from userinfo where count = '%s'", countB);
+
+            
+            
+            //最新的想法：不用管对方离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
             while(1)
             {
                 memset(RecvMsg, 0, sizeof(RecvMsg));
@@ -527,10 +539,26 @@ void PrivateChat(int ClientSocket)
                 
                 //将用户的信息存入数据库
                 sprintf(TransitMsg, "insert into msg values(default, '%s', '%s', NOW(), 0, '%s'", countA, countB, RecvMsg);
-                if(0 != mysql_query(&mysql, TransitMsg))
+                if(mysql_query(&mysql, TransitMsg))
                     my_err("mysql_query", __LINE__);
 
                 memset(TransitMsg, 0, sizeof(TransitMsg));
+                
+
+                //这样的逻辑是，双方必须都登陆且互相使用私聊的命令
+                if(mysql_query(&mysql, query))
+                    my_err("mysql_query", __LINE__);
+                result2 = mysql_store_result(&mysql);
+                if(result2)
+                {
+                    row2 = mysql_fetch_row(result2);
+                    ClientSocketB = atoi(row2[5]);
+                }
+                if(ClientSocketB != -1)
+                {
+                    if(send(ClientSocketB, RecvMsg, strlen(RecvMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                }
             }
     
             Close_Database(mysql);

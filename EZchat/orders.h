@@ -33,6 +33,9 @@ void KickOffC(int Socket);
 void MyGroupsC(int Socket);
 void MyGroupC(int Socket);
 void GroupChatHistoryC(int Socket);
+void* Recv(int Socket);
+void* Send(int Socket);
+void GroupChatC(int Socket);
 
 
 

@@ -846,3 +846,63 @@ void GroupChatHistory(int ClientSocket)
 
     Close_Database(mysql);
 }
+
+
+
+
+void GroupChat(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    char count[9], groupcount[9];
+    MYSQL mysql;   
+    MYSQL_RES           *result = NULL;
+    MYSQL_ROW           row;
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        //确认在线后，先进行接收，接收私聊的用户名
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        strcpy(groupcount, RecvMsg);
+        
+        mysql = Connect_Database();
+        sprintf(SendMsg, "select count from userinfo where socket = '%d'", ClientSocket);
+        if(flag)
+            my_err("mysql_query", __LINE__);
+        memset(SendMsg, 0, sizeof(SendMsg));     
+        
+        result = mysql_store_result(&mysql);
+        if(result)
+        {
+            row = mysql_fetch_row(result);
+            strcpy(count, row[0]);//储存A账号
+        }
+
+        if(JudgeMember(ClientSocket, mysql, count, groupcount))
+        {
+            sprintf(SendMsg, "Orz请开始你的表演");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+        }
+        else
+        {
+            sprintf(SendMsg, "\033[31m你不在群中\033[0m\n");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+        }
+    }
+    else
+    {
+        memset(SendMsg, 0, sizeof(SendMsg));
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__);
+        return;       
+    }
+}

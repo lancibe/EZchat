@@ -587,3 +587,63 @@ void GroupChatHistoryC(int Socket)
         }
     }
 }
+
+
+
+//此函数用于收发群聊信息
+void GroupChatC(int Socket)
+{
+    char SendMsg[1500] = "$sendgroupmsg$";
+    char RecvMsg[1500];
+    signal = 1;
+    int i;
+    memset(Msg, 0, sizeof(Msg));
+
+    if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+        my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));    
+
+    int res;
+    memset(RecvMsg, 0, sizeof(RecvMsg));
+    if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+        my_err("recv", __LINE__);
+    RecvMsg[res] = '\0';
+
+    if(strcmp(RecvMsg, "请先登录")==0)
+    {
+        printf("\033[31m%s\033[0m\n", RecvMsg);
+        return;      
+    }
+    else
+    {
+        printf("\033[32m你想在哪个群发言:\033[0m\n");
+        scanf("%s", SendMsg);
+        //将此用户发言的群号发送至服务器
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+        
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+
+        if(strcmp(RecvMsg, "\033[31m你不在群中\033[0m\n") == 0)
+        {
+            printf("%s", RecvMsg);
+            return;
+        }
+
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        printf("\033[33m输入$close$结束聊天\033[0m\n");
+
+        pthread_t sendthread, recvthread;
+        pthread_create(&sendthread, NULL, (void*)Send, (void*) &Socket);
+        pthread_create(&recvthread, NULL, (void*)Recv, (void*) &Socket);
+        
+        void* result;
+        pthread_join(sendthread, &result);
+        pthread_join(recvthread, &result);
+
+    }
+}

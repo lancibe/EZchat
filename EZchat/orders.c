@@ -456,19 +456,57 @@ void PrivateChatC(int Socket)
         printf("\033[32m%s\033[0m\n", RecvMsg);
         printf("\033[33m输入$close$结束聊天\033[0m\n");
 
-        while(1)
-        {
-            scanf("%s", SendMsg);
-            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg));
+        pthread_t sendthread, recvthread;
+        pthread_create(&sendthread, NULL, (void*)Send, (void*) &Socket);
+        pthread_create(&recvthread, NULL, (void*)Recv, (void*) &Socket);
+        
+        void* result;
+        pthread_join(sendthread, &result);
+        pthread_join(recvthread, &result);
 
-            if(strcmp(SendMsg, "$close$") == 0)
-                break;
-        }
+
+
     }
 }
 
+
+void* Send(int Socket)
+{
+    char SendMsg[1500];
+    while(1)
+    {
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
+
+        if(strcmp(SendMsg, "$close$") == 0)
+        {
+            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));
+            break;
+        }
+    }
+}
+void* Recv(int Socket)
+{
+    char RecvMsg[1500];
+    int res;
+
+    while(1)
+    {
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        if(strcmp(RecvMsg, "$close$") == 0)
+        {
+            break;
+        }
+        printf("%s", RecvMsg);
+    }
+}
 
 //此函数用于在用户登陆之后接收之前的离线信息
 void RecvDatabaseMsg(int Socket)
