@@ -888,6 +888,26 @@ void GroupChat(int ClientSocket)
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__); 
             memset(SendMsg, 0, sizeof(SendMsg));
+
+            while(1)
+            {
+                memset(RecvMsg, 0, sizeof(RecvMsg));
+                if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                    my_err("recv", __LINE__);
+                RecvMsg[res] = '\0';
+                
+                char temp[256];
+                sprintf(temp, "insert into groupmsg values(default, '%s', '%s', NOW(), '%s'", count, groupcount , RecvMsg);
+                if(mysql_query(&mysql, temp))
+                    my_err("mysql_query", __LINE__);
+
+                memset(temp, 0, sizeof(temp));
+
+
+
+                if(strcmp(RecvMsg, "$close$") == 0)
+                    break;
+            }
         }
         else
         {

@@ -28,7 +28,9 @@ void MyGroup(int ClientSocket);
 void GroupChatHistory(int ClientSocket);
 void * Send(int ClientSocket);
 void * Recv(int ClientSocket);
-
+void TransmitFile(int ClientSocket);
+void AcceptFile(int ClientSocket);
+void GroupChat(int ClientSocket);
 
 
 

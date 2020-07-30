@@ -36,6 +36,8 @@ void GroupChatHistoryC(int Socket);
 void* Recv(int Socket);
 void* Send(int Socket);
 void GroupChatC(int Socket);
+void AcceptFileC(int Socket);
+void TransmitFileC(int Socket);
 
 
 

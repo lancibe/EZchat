@@ -148,6 +148,15 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if(strcmp(order, "groupchathistory") == 0) {
         GroupChatHistoryC(Socket);
     }
+    else if(strcmp(order, "groupchat") == 0) {
+        GroupChatC(Socket);
+    }
+    else if(strcmp(order, "transmitfile") == 0 || strcmp(order, "sendfile") == 0) {
+        TransmitFileC(Socket);
+    }
+    else if (strcmp(order, "acceptfile") == 0 || strcmp(order, "recvfile") == 0) {
+        AcceptFileC(Socket);
+    }
     else {
         fprintf(stderr, "无匹配命令");
         memset(order, 0, 1500);

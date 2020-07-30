@@ -125,6 +125,15 @@ int Reflect(char*buf, int flag1, int flag2, int ClientSocket)
     else if(strcmp(reflect, "groupchathistory") == 0) {
         GroupChatHistory(ClientSocket);
     }
+    else if(strcmp(reflect, "sendgroupmsg") == 0) {
+        GroupChat(ClientSocket);
+    }
+    else if(strcmp(reflect, "transmitfile") == 0) {
+        TransmitFile(ClientSocket);
+    }
+    else if(strcmp(reflect, "acceptfile") == 0) {
+        AcceptFile(ClientSocket);
+    }
 }
 
 
@@ -534,8 +543,7 @@ void PrivateChat(int ClientSocket)
                     my_err("recv", __LINE__);
                 RecvMsg[res] = '\0';
                 
-                if(strcmp(RecvMsg, "$close$") == 0)
-                    break;
+                
                 
                 //将用户的信息存入数据库
                 sprintf(TransitMsg, "insert into msg values(default, '%s', '%s', NOW(), 0, '%s'", countA, countB, RecvMsg);
@@ -559,6 +567,9 @@ void PrivateChat(int ClientSocket)
                     if(send(ClientSocketB, RecvMsg, strlen(RecvMsg), 0) < 0)
                         my_err("send", __LINE__); 
                 }
+
+                if(strcmp(RecvMsg, "$close$") == 0)
+                    break;
             }
     
             Close_Database(mysql);
@@ -1137,6 +1148,67 @@ void ChatHistory(int ClientSocket)
         }
 
 
+
+
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+}
+
+
+
+char filemsg[1024];
+void TransmitFile(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    char temp[256];
+    char acount[9],bcount[9];
+    char nickname[21];
+    MYSQL mysql = Connect_Database();
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要进行操作的好友昵称:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg)); 
+
+    }
+    else
+    {
+        sprintf(SendMsg, "请先登录");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));   
+    }
+}
+
+void AcceptFile(int ClientSocket)
+{
+    char SendMsg[1500];
+    char RecvMsg[1500];
+    int len, i, j, flag1,flag;
+    int res;
+    char temp[256];
+    char acount[9],bcount[9];
+    char nickname[21];
+    MYSQL mysql = Connect_Database();
+
+
+    if(JudgeOnline(ClientSocket, mysql))
+    {
+        sprintf(SendMsg, "请输入要进行操作的好友昵称:");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg)); 
 
 
     }
