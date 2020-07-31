@@ -1233,12 +1233,57 @@ void AcceptFile(int ClientSocket)
 
     if(JudgeOnline(ClientSocket, mysql))
     {
-        sprintf(SendMsg, "请输入要进行操作的好友昵称:");
+        sprintf(SendMsg, "请输入要读取的文件名");
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg)); 
 
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        char filename[64];
+        strcpy(filename, RecvMsg);
 
+        FILE* pFile;
+        pFile = fopen(filename, "rb");
+        if(pFile == NULL)
+        {
+            sprintf(SendMsg, "未找到该文件");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg)); 
+            return;
+        }
+        else
+        {
+            sprintf(SendMsg, "文件传输中，请稍后");
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg)); 
+
+            while(1)
+            {
+                if(!feof(pFile))
+                {
+                    fread(SendMsg, 1, 1024, pFile);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));
+                }
+                else
+                {
+                    sprintf(SendMsg, "$finished$");
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));
+                    fclose(pFile);
+                    return;
+                }
+            }
+            
+        }
+        
     }
     else
     {

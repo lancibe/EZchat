@@ -716,7 +716,7 @@ void TransmitFileC(int Socket)
                 if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
                     my_err("send", __LINE__); 
                 memset(SendMsg, 0, sizeof(SendMsg));
-                printf("\033[32m文件传输完成\033[32m");
+                printf("\033[32m文件传输完成\033[0m\n");
                 return;
             }
         }
@@ -748,6 +748,44 @@ void AcceptFileC(int Socket)
     }
     else
     {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        scanf("%s", SendMsg);
+        if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));    
 
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+
+        if(strcmp(RecvMsg, "未找到该文件") == 0)
+        {
+            printf("\033[31m%s\033[0m", RecvMsg);
+            return;
+        }
+        else
+        {
+            printf("\033[32m%s\033[0m\n", RecvMsg);
+            FILE * pFile;
+            pFile = fopen(SendMsg, "wb");
+            while(1)
+            {
+                memset(RecvMsg, 0, sizeof(RecvMsg));
+                if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                    my_err("recv", __LINE__);
+                RecvMsg[res] = '\0';
+                if(strcmp(RecvMsg, "$finished$") == 0)
+                    break;
+
+                //写入文件
+                else
+                {
+                    fwrite(RecvMsg, 1, 1024, pFile);
+                }
+            }
+            fclose(pFile);
+        }
+        
     }
 }
