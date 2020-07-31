@@ -72,3 +72,47 @@
 特别关心:(单方面特别关心)
         $specialcarefriend$
         $specialcare$
+
+聊天记录:
+        $chathistory$
+        $charlog$
+
+创建群聊:
+        $creategroup$
+
+删除群聊:
+        $delgroup$
+
+申请加入群聊:
+        $joingroup$
+
+退出群聊:
+        $exitgroup$
+        $quitgroup$
+
+设置管理员:
+        $setadmin$
+
+群聊踢人:
+        $kickoff$
+
+查看所在群:
+        $mygroups$
+
+查看群成员:
+        $mygroup$
+
+群聊聊天记录:
+        $groupchathistory$
+
+发送群聊信息:
+        $groupchat$
+
+文件传输:
+        $transmitfile$
+        $sendfile$
+
+文件接收:
+        $acceptfile$
+        $recvfile$
+

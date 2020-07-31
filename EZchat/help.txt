@@ -14,3 +14,16 @@ $addfriend$:增加好友
 $delfriend$:删除好友
 $blockfriend$:屏蔽好友
 $specialcare$:特别关心
+$chathistory$:聊天记录
+$creategroup$:创建群聊
+$delgroup$:删除群聊
+$joingroup$:申请加入群聊
+$exitgroup$:退出群聊
+$setadmin$:设置管理员
+$kickoff$:群聊踢人
+$mygroups$:查看所在群
+$mygroup$:查看群成员
+$groupchathistory$:群聊聊天记录
+$groupchar$:发送群聊信息
+$transmitfile$:文件传输
+$acceptfile$:文件接收
