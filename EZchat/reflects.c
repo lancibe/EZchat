@@ -1176,11 +1176,37 @@ void TransmitFile(int ClientSocket)
 
     if(JudgeOnline(ClientSocket, mysql))
     {
-        sprintf(SendMsg, "请输入要进行操作的好友昵称:");
+        sprintf(SendMsg, "请输入文件路径及文件名");
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg)); 
 
+        //接收客户端发来的文件名或者没有该文件发来的关闭信号
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        char filename[64];
+        strcpy(filename, RecvMsg);
+
+        FILE* pFile;
+        pFile = fopen(filename, "wb");
+        while(1)
+        {
+            memset(RecvMsg, 0, sizeof(RecvMsg));
+            if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                my_err("recv", __LINE__);
+            RecvMsg[res] = '\0';
+            if(strcmp(RecvMsg, "$finished$") == 0)
+                break;
+
+            //写入文件
+            else
+            {
+                fwrite(RecvMsg, 1, 1024, pFile);
+            }
+        }
+        fclose(pFile);    
     }
     else
     {
@@ -1189,6 +1215,8 @@ void TransmitFile(int ClientSocket)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));   
     }
+
+    Close_Database(mysql);
 }
 
 void AcceptFile(int ClientSocket)

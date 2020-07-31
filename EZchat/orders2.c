@@ -655,7 +655,7 @@ void TransmitFileC(int Socket)
     char SendMsg[1500] = "$transmitfile$";
     char RecvMsg[1500];
     signal = 1;
-    int i;
+    int i,j;
     memset(Msg, 0, sizeof(Msg));
 
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
@@ -675,7 +675,51 @@ void TransmitFileC(int Socket)
     }
     else
     {
+        printf("\033[32m%s\033[0m\n", RecvMsg);
+        char buffer[256];
+        char *filename;
+        scanf("%s", buffer);
+
+        FILE* pFile;
+        pFile = fopen(buffer, "rb");
+        if(NULL ==pFile)
+        {
+            sprintf(SendMsg, "$close$");
+            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+            printf("\033[31m未查找到该文件\033[0m\n");
+            return;
+        }
+        else
+        {
+            filename=strrchr(buffer, '/');
+            sprintf(SendMsg, "%s", filename+1);
+            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__); 
+            memset(SendMsg, 0, sizeof(SendMsg));    
+
+        }
         
+        while(1)
+        {
+            if(!feof(pFile))
+            {
+                fread(SendMsg, 1, 1024, pFile);
+                if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));
+            }
+            else
+            {
+                sprintf(SendMsg, "$finished$");
+                if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg));
+                printf("\033[32m文件传输完成\033[32m");
+                return;
+            }
+        }
     }
 }
 
