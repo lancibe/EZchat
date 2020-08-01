@@ -1079,13 +1079,13 @@ void ChatHistory(int ClientSocket)
             row = mysql_fetch_row(result);
             strcpy(acount, row[0]);
         }
-        strcpy(nickname, RecvMsg);
         memset(temp, 0, sizeof(temp));
 
         memset(RecvMsg, 0, sizeof(RecvMsg));
         if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0'; 
+        strcpy(nickname, RecvMsg);
 
         sprintf(temp, "select count from userinfo where nickname='%s'", RecvMsg);
         flag = mysql_query(&mysql, temp);
@@ -1106,41 +1106,40 @@ void ChatHistory(int ClientSocket)
         result = mysql_store_result(&mysql);
         if(result)
         {
-            int num_fields;
-            num_fields = mysql_num_fields(result);
-            while((row=mysql_fetch_row(result)) != NULL)
-            {
-                for(i = 0 ; i < num_fields ; i++)
-                {
-                    char sendcount[9],recvcount[9];
-                    char sendtime[64];
-                    char SendMsgs[1024];
-                    strcpy(sendcount, row[1]);
-                    strcpy(recvcount, row[2]);
-                    strncpy(sendtime, &row[3][6], sizeof(char) * 14);
-                    sendtime[14] = '\0';
-                    strcpy(SendMsgs, row[5]);
-
-                    if(strcmp(sendcount, acount) == 0)
-                    {
-                        sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m你\033[0m对\033[32m%s\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
-                        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                            my_err("send", __LINE__); 
-                        memset(SendMsg, 0, sizeof(SendMsg));    
-                    }
-                    else
-                    {
-                        sprintf(SendMsg, "[\033[35m%s\033[0m\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
-                        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                            my_err("send", __LINE__); 
-                        memset(SendMsg, 0, sizeof(SendMsg));                   
-                    }
-                }
-            }
-            sprintf(SendMsg, "$finish$");
+            //发送聊天条数
+            int num;
+            num = mysql_num_rows(result);
+            sprintf(SendMsg, "%d", num);
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg));             
+            memset(SendMsg, 0, sizeof(SendMsg)); 
+
+            while((row=mysql_fetch_row(result)) != NULL)
+            {
+                char sendcount[9],recvcount[9];
+                char sendtime[64];
+                char SendMsgs[1024];
+                strcpy(sendcount, row[1]);
+                strcpy(recvcount, row[2]);
+                strncpy(sendtime, &row[3][6], sizeof(char) * 13);
+                sendtime[13] = '\0';
+                strcpy(SendMsgs, row[5]);
+
+                if(strcmp(sendcount, acount) == 0)
+                {
+                    sprintf(SendMsg, "[\033[35m%s\033[0m]\033[32m你\033[0m对\033[32m%s\033[0m说:\n\t%s\n", sendtime, nickname, SendMsgs);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));    
+                }
+                else
+                {
+                    sprintf(SendMsg, "[\033[35m%s\033[0m]\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s\n", sendtime, nickname, SendMsgs);
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));                   
+                }
+            }   
         }
 
 

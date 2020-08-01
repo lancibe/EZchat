@@ -91,7 +91,7 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     else if (strcmp(order, "exit") == 0 || strcmp(order, "quit") == 0) {
         Exit(Socket);
     }
-    else if (strcmp(order, "myfriends") == 0 || strcmp(order, "friendlist")) {
+    else if (strcmp(order, "myfriends") == 0 || strcmp(order, "friendlist") == 0) {
         MyfriendsC(Socket);
     }
     else if(strcmp(order, "sendmsg") == 0 ) {
@@ -158,12 +158,12 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
         AcceptFileC(Socket);
     }
     else {
-        fprintf(stderr, "无匹配命令");
+        fprintf(stderr, "无匹配命令\n");
         memset(order, 0, 256);
         return 0;
     }
     
-
+    fflush(stdin);
     memset(order, 0, 256);
     return 1;
 }
@@ -412,6 +412,7 @@ void MyfriendsC(int Socket)
 
         }
         printf("\t\t\033[33mNo more...\033[0m\n\n");
+        fflush(stdin);
     }
 }
 
@@ -657,7 +658,6 @@ void ChangePasswordC(int Socket)
     char RecvMsg[1500];
     signal = 1;
     int i;
-    memset(Msg, 0, sizeof(Msg));
 
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
@@ -679,7 +679,6 @@ void ChangePasswordC(int Socket)
         while(1)
         {
             char* temp = NULL;
-            memset(temp, 0, sizeof(temp));
             strcpy(SendMsg, getpass("请输入新密码"));
             strcpy(RecvMsg, getpass("请重复输入新密码"));
             if(strcmp(SendMsg, RecvMsg) == 0)
@@ -863,7 +862,6 @@ void ChatHistoryC(int Socket)
     char RecvMsg[1500];
     signal = 1;
     int i, res;
-    memset(Msg, 0, sizeof(Msg));
 
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
@@ -883,18 +881,25 @@ void ChatHistoryC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
+        //发送要操作的好友的昵称
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));    
 
-        while(1)
+        //接收聊天记录的条数
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0'; 
+        int num = atoi(RecvMsg);
+
+        
+        for(i = 0 ; i < num ; i++)
         {
             memset(RecvMsg, 0, sizeof(RecvMsg));
             if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
                 my_err("recv", __LINE__);
             RecvMsg[res] = '\0'; 
-            if(strcmp(RecvMsg, "$finish$") == 0)
-                break;
             printf("%s", RecvMsg);
         }
     } 
