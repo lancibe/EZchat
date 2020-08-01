@@ -249,7 +249,6 @@ void SigninC(int Socket)
     char RecvMsg[1500];
     signal = 1;
     int i;
-    memset(Msg, 0, sizeof(Msg));
 
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
@@ -289,6 +288,7 @@ void SigninC(int Socket)
     //发送账号至服务器
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
+    memset(SendMsg, 0, sizeof(SendMsg));
     //接收服务器回馈
     if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
         my_err("recv", __LINE__);
@@ -301,8 +301,7 @@ void SigninC(int Socket)
     else
     {//输入密码并且发送
         char* temp = NULL;
-        memset(temp, 0, sizeof(temp));
-        strcpy(SendMsg, getpass(temp));
+        strcpy(SendMsg, getpass(RecvMsg));
         encrypt(SendMsg, &temp);
         if(send(Socket, temp, strlen(temp), 0) < 0)
             my_err("send", __LINE__); 
@@ -362,7 +361,7 @@ void SignoutC(int Socket)
 void Exit(int Socket)
 {
     SignoutC(Socket);
-    printf("期待你的下次使用QWQ\n");
+    printf("\033[32m期待你的下次使用QWQ\033[0m\n");
     exit(0);
 }
 

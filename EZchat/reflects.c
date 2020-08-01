@@ -334,7 +334,7 @@ void Signout(int ClientSocket)
     char RecvMsg[1500];
     int len, i, j, flag;
 
-    MYSQL mysql;
+    MYSQL mysql = Connect_Database();
     if(JudgeOnline(ClientSocket, mysql))
     {
         //在线
@@ -632,8 +632,7 @@ void SendDatabaseMsg(int ClientSocket)
     result = mysql_store_result(&mysql); 
     if(result)
     {
-        row = mysql_fetch_row(result);
-        for(i = 0 ; i < mysql_num_fields(result) ; i++)
+        while((row=mysql_fetch_row(result)) != NULL)
         {
             char sendcount[9],recvcount[9];
             char sendtime[64];
@@ -641,15 +640,15 @@ void SendDatabaseMsg(int ClientSocket)
             char SendMsgs[1500];
             strcpy(sendcount, row[1]);
             strcpy(recvcount, row[2]);
-            strncpy(sendtime, &row[3][6], sizeof(char) * 14);
-            sendtime[14] = '\0';
+            strncpy(sendtime, &row[3][6], sizeof(char) * 13);
+            sendtime[13] = '\0';
             strcpy(SendMsgs, row[5]);
 
             MYSQL_RES           *result1 = NULL;
             MYSQL_ROW           row1;
             char TEmp[256];
             sprintf(TEmp, "select nickname from userinfo where count = '%s'", sendcount);
-            flag = mysql_query(&mysql, temp);
+            flag = mysql_query(&mysql, TEmp);
             if(flag)
                 my_err("mysql_query", __LINE__);
             memset(TEmp, 0, sizeof(TEmp));
@@ -661,12 +660,15 @@ void SendDatabaseMsg(int ClientSocket)
             }
 
             //经过一系列垃圾程序，最终还是将数据库中储存的信息一条一条地发到客户端
-            sprintf(SendMsg, "[\033[35m%s\033[0m]\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s", sendtime, nickname, SendMsgs);
+            sprintf(SendMsg, "[\033[35m%s\033[0m]\033[32m%s\033[0m对\033[32m你\033[0m说:\n\t%s\n", sendtime, nickname, SendMsgs);
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__); 
             memset(SendMsg, 0, sizeof(SendMsg));
             //发送完之后，把数据库中的haveread标记为1，表示已读
             sprintf(TEmp, "update msg set `haveread` = '1' where sendtime='%s' and msg='%s'", row[3], row[5]);
+            flag = mysql_query(&mysql, TEmp);
+            if(flag)
+                my_err("mysql_query", __LINE__);
         }
 
         //离线数据发送完之后，给客户端一个信号，让两边都结束程序的运行

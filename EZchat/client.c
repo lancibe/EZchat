@@ -45,10 +45,6 @@ int main(int argc, char** argv)
     //使两个线程开始工作
     if(0 > pthread_create(&SendThread, 0, (void*) executeSend, NULL))
         my_err("pthread_create", __LINE__);
-    if(0 > pthread_create(&RecvThread, 0, (void*) executeRecv, NULL))
-        my_err("pthread_create", __LINE__);
-    if(0 > pthread_join(RecvThread, &result))
-        my_err("pthread_join", __LINE__);
     if(0 > pthread_join(SendThread, &result))
         my_err("pthread_join", __LINE__);
 
