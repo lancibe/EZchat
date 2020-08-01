@@ -10,12 +10,12 @@
 int AnalyseOrder(char* buf, int Socket)
 {
     int flag1,flag2,i,j;
-    for(i = 0 ; i < 1500 ; i++)
+    for(i = 0 ; i < 256 ; i++)
     {
         if(buf[i] == '$')
         {
             flag1 = i;
-            for(j = i+1 ; j < 1500; j++)
+            for(j = i+1 ; j < 256; j++)
             {
                 if(buf[j] == '$')
                 {
@@ -62,12 +62,12 @@ int AnalyseOrder(char* buf, int Socket)
 int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
 {
     int i,j;
-    char order[1500];
+    char order[256];
     //先判断第三种非法输入情况
     if((buf[flag1] == '$') && (buf[flag1+1] == '$'))
     {
         fprintf(stderr, "字符串buf错误，连续输入两个$");
-        memset(order, 0, 1500);
+        memset(order, 0, 256);
         return 0;
     }    
 
@@ -159,12 +159,12 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
     }
     else {
         fprintf(stderr, "无匹配命令");
-        memset(order, 0, 1500);
+        memset(order, 0, 256);
         return 0;
     }
     
 
-    memset(order, 0, 1500);
+    memset(order, 0, 256);
     return 1;
 }
 
@@ -393,24 +393,24 @@ void MyfriendsC(int Socket)
     }
     else
     {
-        printf("\033[32m%s[0m\n\n", RecvMsg);
+        printf("\033[32m%s\033[0m\n\n", RecvMsg);
         while(1)
         {  
             memset(RecvMsg, 0, sizeof(RecvMsg));
             if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
                 my_err("recv", __LINE__);
+            RecvMsg[res] = '\0';
 
-            if(strcmp(RecvMsg, "\t\t没有更多了...") == 0)
-            {
-                printf("\033[32m%s\033[0m\n\n", RecvMsg);
-                return;
-            }
-            else
+            if(strcmp(RecvMsg, "No more...") != 0)
             {
                 printf("%s\n\n", RecvMsg);
             }
+            else
+            {
+                printf("\t\t\033[32m%s\033[0m\n\n", RecvMsg);
+                break;
+            }
         }
-        return;
     }
 }
 

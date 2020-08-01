@@ -66,34 +66,10 @@ void * executeSend(void)
     while(1)
     {
         //向服务器发送信息
-        char buf[1500];
-        memset(buf, 0, 1500);
+        static char buf[256];
+        memset(buf, 0, sizeof(buf));
         scanf("%s", buf);
-        /* sprintf(SendMsg, "\033[34m%s\033[0m\n", buf);
-        if(send(server, SendMsg, strlen(SendMsg), 0) < 0)
-            my_err("send", __LINE__); */
         AnalyseOrder(buf, server);
-    
-    }
-
-
-}
-
-void * executeRecv(void)
-{
-
-    while(1)
-    {
-        if(signal == 1) {
-            pthread_mutex_lock(&mutex);
-        }
-
-
-/*         if((res = recv(server, RecvMsg, sizeof(RecvMsg)-1 , 0)) < 0)
-            my_err("recv", __LINE__);
-        RecvMsg[res] = '\0';
-        memset(Msg, 0, sizeof(Msg));
-        strcpy(Msg, RecvMsg);
-        printf("\033[32m%-s\033[0m\n", RecvMsg); */
+        fflush(stdin);
     }
 }

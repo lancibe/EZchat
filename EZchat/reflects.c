@@ -343,7 +343,6 @@ void Signout(int ClientSocket)
         if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__);
 
-        mysql = Connect_Database();
         memset(SendMsg, 0, sizeof(SendMsg));
         sprintf(SendMsg, "update userinfo set online = 0, socket = -1, ip= '0' where socket = %d", ClientSocket);
         mysql_query(&mysql, SendMsg);
@@ -368,7 +367,7 @@ void Myfriends(int ClientSocket)
     char RecvMsg[1500];
     int len, i, j, flag1,flag;
 
-    MYSQL mysql;
+    MYSQL mysql = Connect_Database();
     if(JudgeOnline(ClientSocket, mysql))
     {
         //在线
@@ -411,41 +410,37 @@ void Myfriends(int ClientSocket)
             field = mysql_fetch_field(result);
             num_fields = mysql_num_fields(result);
 
-            while((row=mysql_fetch_row(result)) != NULL){	
+            while((row=mysql_fetch_row(result)) != NULL)
+            {	
 				//打印数据，for循环不知道几列。直到读取完
-				for(i = 0 ; i < num_fields ; i++)
-				{
-                    strcpy(bcount, row[2]);
-                    relationship = atoi(row[3]);
+                strcpy(bcount, row[2]);
+                relationship = atoi(row[3]);
 
-                    //这时候已经得到了 A、B的账号，和A对B的关系
-                    //接下来应该在userinfo中查找到B的昵称 然后发送到客户端
-                    char temp[256];
-                    sprintf(temp, "select nickname from userinfo where `count` = '%s'", bcount);
-                    flag1 = mysql_query(&mysql, temp);
-                    if(flag)
-                        my_err("mysql_query", __LINE__);
-                    memset(temp, 0, sizeof(temp));
+                //这时候已经得到了 A、B的账号，和A对B的关系
+                //接下来应该在userinfo中查找到B的昵称 然后发送到客户端
+                char temp[256];
+                sprintf(temp, "select nickname from userinfo where `count` = '%s'", bcount);
+                flag1 = mysql_query(&mysql, temp);
+                if(flag)
+                    my_err("mysql_query", __LINE__);
+                memset(temp, 0, sizeof(temp));
 
-                    MYSQL_RES           *result1 = NULL;
-                    MYSQL_ROW           row1;
-                    char bnickname[21];
-                    result1 = mysql_store_result(&mysql);
-                    if(result1)
-                    {
-                        row1 = mysql_fetch_row(result1);
-                        strcpy(bnickname, row1[0]);
-                        strcpy(bcount, row1[1]);
-                        printf("\t\t账号%s:\t昵称%s\n", bcount, bnickname);
-                    }
-                    sprintf(SendMsg, "\t\t账号%s:\t昵称%s", bcount, bnickname);
-                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                        my_err("send", __LINE__);
-                    memset(SendMsg, 0, sizeof(SendMsg)); 
+                MYSQL_RES           *result1 = NULL;
+                MYSQL_ROW           row1;
+                char bnickname[21];
+                result1 = mysql_store_result(&mysql);
+                if(result1)
+                {
+                    row1 = mysql_fetch_row(result1);
+                    strcpy(bnickname, row1[0]);
                 }
+                sprintf(SendMsg, "\t\t账号%s:\t昵称%s", bcount, bnickname);
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__);
+                memset(SendMsg, 0, sizeof(SendMsg)); 
             }
             
-            sprintf(SendMsg, "\t\t没有更多了...");
+            sprintf(SendMsg, "No more...");
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__);
             memset(SendMsg, 0, sizeof(SendMsg));
@@ -473,7 +468,7 @@ void PrivateChat(int ClientSocket)
     int len, i, j, flag1,flag;
     int res;
     char countA[9], countB[9];
-    MYSQL mysql;   
+    MYSQL mysql = Connect_Database();   
     MYSQL_RES           *result = NULL;
     MYSQL_ROW           row;
     if(JudgeOnline(ClientSocket, mysql))
@@ -687,7 +682,7 @@ void CheckFriend(int ClientSocket)
     char RecvMsg[1500];
     int len, i, j, flag1,flag;
     int res;
-    MYSQL mysql;   
+    MYSQL mysql = Connect_Database();   
     MYSQL_RES           *result = NULL;
     MYSQL_ROW           row;
     char acount[9], bcount[9];
