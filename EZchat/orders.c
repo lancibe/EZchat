@@ -42,10 +42,10 @@ int AnalyseOrder(char* buf, int Socket)
                 {
                     printf("\033[31m无效的指令，请重新输入:(\033[0m\n");
                     fflush(stdin);
-                    break;
+                    return 0;
                 }
             }
-            break;
+            return 0;
         }
         else
         {
@@ -361,7 +361,7 @@ void SignoutC(int Socket)
 void Exit(int Socket)
 {
     SignoutC(Socket);
-    printf("\033[32m期待你的下次使用QWQ\033[0m\n");
+    printf("\033[34m期待你的下次使用QWQ\033[0m\n");
     exit(0);
 }
 
@@ -394,23 +394,24 @@ void MyfriendsC(int Socket)
     else
     {
         printf("\033[32m%s\033[0m\n\n", RecvMsg);
-        while(1)
+        memset(RecvMsg, 0, sizeof(RecvMsg));
+        if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+            my_err("recv", __LINE__);
+        RecvMsg[res] = '\0';
+        
+        int num = atoi(RecvMsg);
+
+        for(i = 0 ; i < num ; i++)
         {  
             memset(RecvMsg, 0, sizeof(RecvMsg));
             if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
                 my_err("recv", __LINE__);
             RecvMsg[res] = '\0';
 
-            if(strcmp(RecvMsg, "No more...") != 0)
-            {
-                printf("%s\n\n", RecvMsg);
-            }
-            else
-            {
-                printf("\t\t\033[32m%s\033[0m\n\n", RecvMsg);
-                break;
-            }
+            printf("%s\n\n", RecvMsg);
+
         }
+        printf("\t\t\033[33mNo more...\033[0m\n\n");
     }
 }
 

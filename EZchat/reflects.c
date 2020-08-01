@@ -404,15 +404,18 @@ void Myfriends(int ClientSocket)
         memset(SendMsg, 0, sizeof(SendMsg));     
         
         result = mysql_store_result(&mysql);
-        int num_fields;
+        int num;
         if(result)
         {
             field = mysql_fetch_field(result);
-            num_fields = mysql_num_fields(result);
+            num = mysql_num_rows(result);
+            sprintf(SendMsg, "%d", num);
+            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                my_err("send", __LINE__);
+            memset(SendMsg, 0, sizeof(SendMsg)); 
 
             while((row=mysql_fetch_row(result)) != NULL)
             {	
-				//打印数据，for循环不知道几列。直到读取完
                 strcpy(bcount, row[2]);
                 relationship = atoi(row[3]);
 
@@ -440,10 +443,6 @@ void Myfriends(int ClientSocket)
                 memset(SendMsg, 0, sizeof(SendMsg)); 
             }
             
-            sprintf(SendMsg, "No more...");
-            if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__);
-            memset(SendMsg, 0, sizeof(SendMsg));
         }
         Close_Database(mysql);
     }

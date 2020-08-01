@@ -68,8 +68,8 @@ void * executeSend(void)
         //向服务器发送信息
         static char buf[256];
         memset(buf, 0, sizeof(buf));
+        printf("\033[33m请输入命令:  \033[0m");
         scanf("%s", buf);
         AnalyseOrder(buf, server);
-        fflush(stdin);
     }
 }
