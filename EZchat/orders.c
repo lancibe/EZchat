@@ -425,7 +425,6 @@ void PrivateChatC(int Socket)
     char RecvMsg[1500];
     signal = 1;
     int i;
-    memset(Msg, 0, sizeof(Msg));
 
     if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
@@ -444,8 +443,7 @@ void PrivateChatC(int Socket)
     }
     else
     {
-        printf("\033[32m你想和谁私聊:\033[0m\n");
-        printf("\033[32mnickname:\033[0m");
+        printf("%s", RecvMsg);
         scanf("%s", SendMsg);
         //将被此用户私聊的用户名发送至服务器
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
@@ -463,7 +461,7 @@ void PrivateChatC(int Socket)
             return;
         }
 
-        printf("\033[32m%s\033[0m\n", RecvMsg);
+        printf("\033[32m%s\033[0m", RecvMsg);
         printf("\033[33m输入$close$结束聊天\033[0m\n");
 
         pthread_t sendthread, recvthread;
@@ -480,27 +478,30 @@ void PrivateChatC(int Socket)
 }
 
 
-void* Send(int Socket)
+void* Send(void* tempSocket)
 {
+    int Socket = *(int*)tempSocket;
     char SendMsg[1500];
     while(1)
     {
+        fflush(stdin);
         scanf("%s", SendMsg);
+        fflush(stdin);
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
-        memset(SendMsg, 0, sizeof(SendMsg));
-
+        
+        
+        SendMsg[7] = '\0';
         if(strcmp(SendMsg, "$close$") == 0)
         {
-            if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
-                my_err("send", __LINE__); 
-            memset(SendMsg, 0, sizeof(SendMsg));
             break;
         }
+        memset(SendMsg, 0, sizeof(SendMsg));
     }
 }
-void* Recv(int Socket)
+void* Recv(void* tempSocket)
 {
+    int Socket = *(int*)tempSocket;
     char RecvMsg[1500];
     int res;
 

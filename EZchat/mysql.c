@@ -105,9 +105,8 @@ int JudgeOnline(int ClientSocket, MYSQL mysql)
 
 
 //此函数用于查明两个用户的关系
-int JudgeFriend(int ClientSocket, MYSQL mysql, char acount[9], char bcount[9])
+int JudgeFriend(int ClientSocket, MYSQL mysql, char* acount, char* bcount)
 {
-	mysql = Connect_Database();
 	MYSQL_RES           *result = NULL;
     MYSQL_ROW           row;
 	char temp[256];
@@ -115,12 +114,13 @@ int JudgeFriend(int ClientSocket, MYSQL mysql, char acount[9], char bcount[9])
 	int flag = mysql_query(&mysql, temp);
 	if(flag)
         my_err("mysql_query", __LINE__);
-	    result = mysql_store_result(&mysql);
-    
+	result = mysql_store_result(&mysql);
 	if(result)
     {
         row = mysql_fetch_row(result);
-		return atoi(row[3]);
+		char temp = row[3][0];
+
+		return temp-48;
     }
 	else
 	{

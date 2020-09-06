@@ -472,14 +472,18 @@ void PrivateChat(int ClientSocket)
     MYSQL_ROW           row;
     if(JudgeOnline(ClientSocket, mysql))
     {
+        strcpy(SendMsg, "\033[32m请输入要私聊的用户昵称:\033[0m\n");
+        if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+            my_err("send", __LINE__); 
+        memset(SendMsg, 0, sizeof(SendMsg));
         //确认在线后，先进行接收，接收私聊的用户名
         memset(RecvMsg, 0, sizeof(RecvMsg));
         if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
         
-        mysql = Connect_Database();
-        sprintf(SendMsg, "select count from userinfo where socket = '%d'", ClientSocket);
+        sprintf(SendMsg, "select `count` from `userinfo` where `socket`= '%d'", ClientSocket);
+        mysql_query(&mysql, SendMsg);
         if(flag)
             my_err("mysql_query", __LINE__);
         memset(SendMsg, 0, sizeof(SendMsg));     
@@ -492,7 +496,7 @@ void PrivateChat(int ClientSocket)
         }
         
         //收到用户名后，先确认是否有此名
-        sprintf(SendMsg, "select count from userinfo where nickname = '%s'", RecvMsg);
+        sprintf(SendMsg, "select `count` from `userinfo` where `nickname` = '%s'", RecvMsg);
         flag = mysql_query(&mysql, SendMsg);
         if(flag)
             my_err("mysql_query", __LINE__);
@@ -504,14 +508,13 @@ void PrivateChat(int ClientSocket)
             row = mysql_fetch_row(result);
             strcpy(countB, row[0]);//储存B账号
         }
-
         //两个账号都经过确认之后，判断两者好友关系
         int Judge1 = JudgeFriend(ClientSocket, mysql, countA, countB);
         int Judge2 = JudgeFriend(ClientSocket, mysql, countB, countA);
         if((Judge1 == 1 || Judge1 ==2) && (Judge2==1|| Judge2 == 2))
         {
             //两项都确认完后，指示客户端开始输入
-            strcpy(SendMsg, "Orz请开始你的表演");
+            strcpy(SendMsg, "Orz请开始你的表演\n");
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__); 
             memset(SendMsg, 0, sizeof(SendMsg));
@@ -528,19 +531,22 @@ void PrivateChat(int ClientSocket)
             sprintf(query, "select * from userinfo where count = '%s'", countB);
 
             
-            
             //最新的想法：不用管对方离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
             while(1)
             {
                 memset(RecvMsg, 0, sizeof(RecvMsg));
-                if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
+                if((res = recv(ClientSocket, RecvMsg, sizeof(RecvMsg) - 1, 0)) <= 0)
                     my_err("recv", __LINE__);
                 RecvMsg[res] = '\0';
                 
+                printf("%s\n", RecvMsg);
                 
-                
+                RecvMsg[7] = '\0';
+                if(strcmp(RecvMsg, "$close$") == 0)
+                    break;
+
                 //将用户的信息存入数据库
-                sprintf(TransitMsg, "insert into msg values(default, '%s', '%s', NOW(), 0, '%s'", countA, countB, RecvMsg);
+                sprintf(TransitMsg, "insert into `msg` values(default, '%s', '%s', NOW(), 0, '%s')", countA, countB, RecvMsg);
                 if(mysql_query(&mysql, TransitMsg))
                     my_err("mysql_query", __LINE__);
 
@@ -548,7 +554,7 @@ void PrivateChat(int ClientSocket)
                 
 
                 //这样的逻辑是，双方必须都登陆且互相使用私聊的命令
-                if(mysql_query(&mysql, query))
+/*                 if(mysql_query(&mysql, query))
                     my_err("mysql_query", __LINE__);
                 result2 = mysql_store_result(&mysql);
                 if(result2)
@@ -560,10 +566,8 @@ void PrivateChat(int ClientSocket)
                 {
                     if(send(ClientSocketB, RecvMsg, strlen(RecvMsg), 0) < 0)
                         my_err("send", __LINE__); 
-                }
+                } */
 
-                if(strcmp(RecvMsg, "$close$") == 0)
-                    break;
             }
     
             Close_Database(mysql);
@@ -1051,14 +1055,15 @@ void ChatHistory(int ClientSocket)
 {
     char SendMsg[1500];
     char RecvMsg[1500];
-    int len, i, j, flag1,flag;
+    int len, i, j, flag1,flag, flag2;
     int res;
     char temp[256];
     char acount[9],bcount[9];
     char nickname[21];
     MYSQL mysql = Connect_Database();   
     MYSQL_RES           *result = NULL;
-    MYSQL_ROW          row;
+    MYSQL_RES           *result2 = NULL;
+    MYSQL_ROW          row, row2;
     MYSQL_FIELD        *field;
 
 
@@ -1100,30 +1105,30 @@ void ChatHistory(int ClientSocket)
         memset(temp, 0, sizeof(temp));
 
         sprintf(temp, "select * from msg where ((sendcount = '%s' and recvcount = '%s') or (sendcount = '%s' and recvcount = '%s'))", acount, bcount, bcount, acount);
-        flag = mysql_query(&mysql, temp);
-        if(flag)
+        flag2 = mysql_query(&mysql, temp);
+        if(flag2)
             my_err("mysql_query", __LINE__);
-        result = mysql_store_result(&mysql);
-        if(result)
+        result2 = mysql_store_result(&mysql);
+        if(result2)
         {
             //发送聊天条数
             int num;
-            num = mysql_num_rows(result);
+            num = mysql_num_rows(result2);
             sprintf(SendMsg, "%d", num);
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__); 
             memset(SendMsg, 0, sizeof(SendMsg)); 
 
-            while((row=mysql_fetch_row(result)) != NULL)
+            while((row2=mysql_fetch_row(result2)) != NULL)
             {
                 char sendcount[9],recvcount[9];
                 char sendtime[64];
                 char SendMsgs[1024];
-                strcpy(sendcount, row[1]);
-                strcpy(recvcount, row[2]);
-                strncpy(sendtime, &row[3][6], sizeof(char) * 13);
+                strcpy(sendcount, row2[1]);
+                strcpy(recvcount, row2[2]);
+                strncpy(sendtime, &row2[3][6], sizeof(char) * 13);
                 sendtime[13] = '\0';
-                strcpy(SendMsgs, row[5]);
+                strcpy(SendMsgs, row2[5]);
 
                 if(strcmp(sendcount, acount) == 0)
                 {
