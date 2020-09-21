@@ -531,7 +531,7 @@ void PrivateChat(int ClientSocket)
             sprintf(query, "select * from userinfo where count = '%s'", countB);
 
             
-            //最新的想法：不用管对方离线不离线，我把所有的数据存到数据库里，你20年之后上线我就20年之后在你一上线就全发给宁
+            
             while(1)
             {
                 memset(RecvMsg, 0, sizeof(RecvMsg));
