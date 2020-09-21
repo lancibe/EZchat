@@ -96,11 +96,14 @@ int JudgeOnline(int ClientSocket, MYSQL mysql)
         if(result)
         {
             row = mysql_fetch_row(result);
-			char *online;
-			online = row[0];
+			if(row==NULL)
+				return 0;
+			char online[32];
+			strcpy(online, row[0]);
 			return atoi(online);
         }
 	}
+	return 0;
 }
 
 
