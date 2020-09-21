@@ -19,7 +19,7 @@ char Msg[64][1500];             //每个线程可以通过使用其内部的pool
   */
 #define LISTEN_MAX 1 
 
-#define SERVER_IP "192.168.31.136" 
+#define SERVER_IP "192.168.30.112" 
 
 typedef struct
 { 

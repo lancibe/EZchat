@@ -141,11 +141,11 @@ int Signup(int ClientSocket)
 {
     char SendMsg[1500]="请输入您的昵称:)";
     char RecvMsg[1500];
+    memset(RecvMsg,0,1500);
     char nickname[21], *passwd, count[9];
     int len,i,j;
 
     MYSQL mysql = Connect_Database();
-
     //向用户发送请输入昵称，并立即进入阻塞，等待接收用户输入的昵称
     if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
         my_err("send", __LINE__); 
@@ -168,7 +168,7 @@ int Signup(int ClientSocket)
     decrypt(RecvMsg, &passwd, len);
 
 
-    if(strcmp(passwd, "failed to create") == 0){
+    if(strcmp(RecvMsg, "failed to create") == 0){
         fprintf(stderr, "密码创建失败\n");
         return 0;
     }
