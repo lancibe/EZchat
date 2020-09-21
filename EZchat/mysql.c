@@ -121,6 +121,8 @@ int JudgeFriend(int ClientSocket, MYSQL mysql, char* acount, char* bcount)
 	if(result)
     {
         row = mysql_fetch_row(result);
+		if(row==NULL)
+			return 0;
 		char temp = row[3][0];
 
 		return temp-48;
