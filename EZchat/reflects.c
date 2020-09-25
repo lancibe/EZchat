@@ -996,10 +996,11 @@ void ChangeFriend(int ClientSocket, char kind)
                 return;
             }
         }
-        sprintf(temp, "select * from userinfo where count = %s", &RecvMsg[i]);
-        if(mysql_query(&mysql, temp))
+        sprintf(temp, "select * from userinfo where count = %s", RecvMsg);
+        flag = mysql_query(&mysql, temp);
+        if(flag)
             my_err("mysql_query", __LINE__);
-        strcpy(bcount, &RecvMsg[i]);
+        strcpy(bcount, RecvMsg);
         
         memset(temp, 0, sizeof(temp));
         result = mysql_store_result(&mysql);

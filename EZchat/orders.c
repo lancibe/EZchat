@@ -718,7 +718,7 @@ void AddFriendC(int Socket)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
 
-    if(strcmp(RecvMsg, "请先登录")==0)
+    if(strcmp(RecvMsg, "请先登录")==0|| strcmp(RecvMsg, "账号不存在")==0)
     {
         printf("\033[31m%s\033[0m\n", RecvMsg);
         return;      
@@ -769,7 +769,7 @@ void DelFriendC(int Socket)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
 
-    if(strcmp(RecvMsg, "请先登录")==0)
+    if(strcmp(RecvMsg, "请先登录")==0 || strcmp(RecvMsg, "账号不存在")==0)
     {
         printf("\033[31m%s\033[0m\n", RecvMsg);
         return;      
@@ -818,7 +818,7 @@ void BlockFriendC(int Socket)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
 
-    if(strcmp(RecvMsg, "请先登录")==0)
+    if(strcmp(RecvMsg, "请先登录")==0|| strcmp(RecvMsg, "账号不存在")==0)
     {
         printf("\033[31m%s\033[0m\n", RecvMsg);
         return;      
@@ -868,7 +868,7 @@ void SpecialCareFriendC(int Socket)
         my_err("recv", __LINE__);
     RecvMsg[res] = '\0';
 
-    if(strcmp(RecvMsg, "请先登录")==0)
+    if(strcmp(RecvMsg, "请先登录")==0|| strcmp(RecvMsg, "账号不存在")==0)
     {
         printf("\033[31m%s\033[0m\n", RecvMsg);
         return;      
