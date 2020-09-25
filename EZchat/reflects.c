@@ -985,10 +985,16 @@ void ChangeFriend(int ClientSocket, char kind)
         int order;
         for(i = 0 ; i < res ; i++)
         {
-            if(RecvMsg[i] == '0')
+            if(RecvMsg[i] >= '0' && RecvMsg[i] <= '9')
                 continue;
             else 
-                break;
+            {
+                sprintf(SendMsg, "账号非法:(");
+                if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                    my_err("send", __LINE__); 
+                memset(SendMsg, 0, sizeof(SendMsg)); 
+                return;
+            }
         }
         sprintf(temp, "select * from userinfo where count = %s", &RecvMsg[i]);
         if(mysql_query(&mysql, temp))

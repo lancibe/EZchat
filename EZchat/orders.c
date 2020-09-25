@@ -727,6 +727,7 @@ void AddFriendC(int Socket)
     {
         printf("\033[32m%s\033[0m\n", RecvMsg);
         scanf("%s", SendMsg);
+        //发送账号☞服务器
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         memset(SendMsg, 0, sizeof(SendMsg));    
@@ -735,6 +736,17 @@ void AddFriendC(int Socket)
         if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
+
+        if(strcmp(RecvMsg, "账号非法:(") == 0)
+        {
+            printf("\033[31m%s\033[0m\n", RecvMsg);
+            return;
+        }
+        else
+        {
+            printf("\033[32m%s\033[0m\n", RecvMsg);
+        }
+        
     }
 }
 
@@ -774,6 +786,16 @@ void DelFriendC(int Socket)
         if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0'; 
+
+        if(strcmp(RecvMsg, "账号非法:(") == 0)
+        {
+            printf("\033[31m%s\033[0m\n", RecvMsg);
+            return;
+        }
+        else
+        {
+            printf("\033[32m%s\033[0m\n", RecvMsg);
+        }
     }    
 }
 
@@ -813,6 +835,17 @@ void BlockFriendC(int Socket)
         if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';     
+
+
+        if(strcmp(RecvMsg, "账号非法:(") == 0)
+        {
+            printf("\033[31m%s\033[0m\n", RecvMsg);
+            return;
+        }
+        else
+        {
+            printf("\033[32m%s\033[0m\n", RecvMsg);
+        }
     }    
 }
 
@@ -852,6 +885,17 @@ void SpecialCareFriendC(int Socket)
         if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0'; 
+
+
+        if(strcmp(RecvMsg, "账号非法:(") == 0)
+        {
+            printf("\033[31m%s\033[0m\n", RecvMsg);
+            return;
+        }
+        else
+        {
+            printf("\033[32m%s\033[0m\n", RecvMsg);
+        }
     }    
 }
 

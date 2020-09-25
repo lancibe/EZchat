@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     struct sockaddr_in ServerMsg;
     ServerMsg.sin_family = AF_INET;
     ServerMsg.sin_port = htons(14233);
-    ServerMsg.sin_addr.s_addr = inet_addr("192.168.30.112");//注意这里的端口号和IP地址一定都是服务器的
+    ServerMsg.sin_addr.s_addr = inet_addr("127.0.0.1");//注意这里的端口号和IP地址一定都是服务器的
     if(connect(server, (struct sockaddr*)&ServerMsg, sizeof(struct sockaddr_in)) < 0)
         my_err("connect", __LINE__);
 
