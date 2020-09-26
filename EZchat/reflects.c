@@ -483,7 +483,7 @@ void PrivateChat(int ClientSocket)
         RecvMsg[res] = '\0';
         
         sprintf(SendMsg, "select `count` from `userinfo` where `socket`= '%d'", ClientSocket);
-        mysql_query(&mysql, SendMsg);
+        flag = mysql_query(&mysql, SendMsg);
         if(flag)
             my_err("mysql_query", __LINE__);
         memset(SendMsg, 0, sizeof(SendMsg));     
@@ -526,7 +526,7 @@ void PrivateChat(int ClientSocket)
             //如果在线，则存入后可以直接发送
             int ClientSocketB;
             MYSQL_RES           *result2 = NULL;
-            MYSQL_ROW           row2;
+            MYSQL_ROW           row2=NULL;
             char query[256];
             sprintf(query, "select * from userinfo where count = '%s'", countB);
 
