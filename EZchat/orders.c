@@ -443,7 +443,7 @@ void PrivateChatC(int Socket)
     }
     else
     {
-        printf("%s", RecvMsg);
+        printf("%s", RecvMsg);//请输入要私聊的用户昵称
         scanf("%s", SendMsg);
         //将被此用户私聊的用户名发送至服务器
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
@@ -455,7 +455,7 @@ void PrivateChatC(int Socket)
             my_err("recv", __LINE__);
         RecvMsg[res] = '\0';
 
-        if(strcmp(RecvMsg, "\033[31m你必须先加对方为好友，才能发起对话\033[0m\n") == 0)
+        if(strcmp(RecvMsg, "你必须先加对方为好友，才能发起对话\n") == 0)
         {
             printf("%s", RecvMsg);
             return;
@@ -473,7 +473,7 @@ void PrivateChatC(int Socket)
         pthread_join(recvthread, &result);
 
 
-
+        
     }
 }
 
@@ -490,13 +490,13 @@ void* Send(void* tempSocket)
             my_err("send", __LINE__); 
         
         
-        SendMsg[7] = '\0';
         if(strcmp(SendMsg, "$close$") == 0)
         {
             break;
         }
         memset(SendMsg, 0, sizeof(SendMsg));
     }
+    printf("发送线程执行完毕\n");
 }
 void* Recv(void* tempSocket)
 {
@@ -516,6 +516,7 @@ void* Recv(void* tempSocket)
         }
         printf("%s", RecvMsg);
     }
+    printf("接收线程执行完毕\n");
 }
 
 //此函数用于在用户登陆之后接收之前的离线信息

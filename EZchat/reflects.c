@@ -543,7 +543,14 @@ void PrivateChat(int ClientSocket)
                 
                 RecvMsg[7] = '\0';
                 if(strcmp(RecvMsg, "$close$") == 0)
+                {
+                    sprintf(SendMsg, "$close$");
+                    if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
+                        my_err("send", __LINE__); 
+                    memset(SendMsg, 0, sizeof(SendMsg));
                     break;
+                }
+                    
 
                 //将用户的信息存入数据库
                 sprintf(TransitMsg, "insert into `msg` values(default, '%s', '%s', NOW(), 0, '%s')", countA, countB, RecvMsg);
@@ -554,7 +561,7 @@ void PrivateChat(int ClientSocket)
                 
 
                 //这样的逻辑是，双方必须都登陆且互相使用私聊的命令
-/*                 if(mysql_query(&mysql, query))
+                if(mysql_query(&mysql, query))
                     my_err("mysql_query", __LINE__);
                 result2 = mysql_store_result(&mysql);
                 if(result2)
@@ -566,14 +573,14 @@ void PrivateChat(int ClientSocket)
                 {
                     if(send(ClientSocketB, RecvMsg, strlen(RecvMsg), 0) < 0)
                         my_err("send", __LINE__); 
-                } */
+                } 
 
             }
     
             Close_Database(mysql);
         }
         else{
-            strcpy(SendMsg, "\033[31m你必须先加对方为好友，才能发起对话\033[0m\n");
+            strcpy(SendMsg, "你必须先加对方为好友，才能发起对话\n");
             if(send(ClientSocket, SendMsg, strlen(SendMsg), 0) < 0)
                 my_err("send", __LINE__); 
             memset(SendMsg, 0, sizeof(SendMsg));
