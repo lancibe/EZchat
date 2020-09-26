@@ -70,7 +70,8 @@ void * executeSend(void)
         memset(buf, 0, sizeof(buf));
         printf("\033[33m请输入命令:  \033[0m");
         scanf("%s", buf);
-        fflush(stdin);
+        int c;
+        while((c=getchar()) != '\n' && c != EOF);
         AnalyseOrder(buf, server);
     }
 }
