@@ -29,8 +29,7 @@ int AnalyseOrder(char* buf, int Socket)
             {
                 //有前无后，指令无效
                 printf("\033[31m无效的指令，请重新输入:(\033[0m\n");
-                int c;
-                while((c=getchar()) != '\n' && c != EOF);
+                setbuf(stdin,NULL);
                 break;
             }
             else
@@ -38,13 +37,11 @@ int AnalyseOrder(char* buf, int Socket)
                 //找到前后$了，开始执行命令
                 int order = JudgeOrder(buf, flag1, flag2, Socket);
                 printf("\033[33m命令执行完毕!\033[0m\n");
-                int c;
-                while((c=getchar()) != '\n' && c != EOF);
+                setbuf(stdin,NULL);
                 if(order == 0)
                 {
                     printf("\033[31m无效的指令，请重新输入:(\033[0m\n");
-                    int c;
-                    while((c=getchar()) != '\n' && c != EOF);
+                    setbuf(stdin,NULL);
                     return 0;
                 }
             }
@@ -56,8 +53,7 @@ int AnalyseOrder(char* buf, int Socket)
             printf("\033[31m请输入正确的指令:(\033[0m\n");
             break;
         }
-        int c;
-        while((c=getchar()) != '\n' && c != EOF);
+        setbuf(stdin,NULL);
     }
 }
 
@@ -167,8 +163,7 @@ int JudgeOrder(char*buf, int flag1, int flag2, int Socket)
         return 0;
     }
     
-    int c;
-    while((c=getchar()) != '\n' && c != EOF);
+    setbuf(stdin,NULL);
     memset(order, 0, 256);
     return 1;
 }
@@ -417,8 +412,7 @@ void MyfriendsC(int Socket)
 
         }
         printf("\t\t\033[33mNo more...\033[0m\n\n");
-        int c;
-        while((c=getchar()) != '\n' && c != EOF);
+        setbuf(stdin,NULL);
     }
 }
 
@@ -490,10 +484,8 @@ void* Send(void* tempSocket)
     char SendMsg[1500];
     while(1)
     {
-        int c;
-        while((c=getchar()) != '\n' && c != EOF);
+        setbuf(stdin,NULL);
         scanf("%s", SendMsg);
-        while((c=getchar()) != '\n' && c != EOF);
         if(send(Socket, SendMsg, strlen(SendMsg), 0) < 0)
             my_err("send", __LINE__); 
         
@@ -946,13 +938,14 @@ void ChatHistoryC(int Socket)
         int num = atoi(RecvMsg);
 
         
-        for(i = 0 ; i < num ; i++)
+        for(i = 0 ; i < num; i++)
         {
             memset(RecvMsg, 0, sizeof(RecvMsg));
             if((res = recv(Socket, RecvMsg, sizeof(RecvMsg) - 1, 0)) < 0)
                 my_err("recv", __LINE__);
             RecvMsg[res] = '\0'; 
             printf("%s", RecvMsg);
+            printf("123\n");
         }
     } 
 }
